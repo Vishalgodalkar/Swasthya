@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,34 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// VitaSecure Health custom colors
+				'health-blue': {
+					50: '#f0f7ff',
+					100: '#e0effe',
+					200: '#bae0fd',
+					300: '#7dc6fb',
+					400: '#39a4f6',
+					500: '#1686e8',
+					600: '#0a69c7',
+					700: '#0c55a2',
+					800: '#104885',
+					900: '#13406f',
+					950: '#0e2a4b',
+				},
+				'health-green': {
+					50: '#edfbf5',
+					100: '#d6f5e7',
+					200: '#b0ead3',
+					300: '#79d8b6',
+					400: '#3fbf94',
+					500: '#25a67d',
+					600: '#188566',
+					700: '#156a54',
+					800: '#155445',
+					900: '#13463a',
+					950: '#07271f',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +112,27 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'pulse-gentle': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'pulse-gentle': 'pulse-gentle 3s ease-in-out infinite'
 			}
 		}
 	},
