@@ -9,6 +9,8 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
+  isDoctor: () => boolean;
+  isPatient: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -109,8 +111,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const isDoctor = () => {
+    return user?.userType === 'doctor';
+  };
+
+  const isPatient = () => {
+    return user?.userType === 'patient';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      isDoctor, 
+      isPatient 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -9,6 +9,8 @@ let users: User[] = [];
 let medicalReports: MedicalReport[] = [];
 let emergencyContacts: EmergencyContact[] = [];
 let healthMetrics: HealthMetric[] = [];
+let appointments: Appointment[] = [];
+let doctorProfiles: DoctorProfile[] = [];
 
 // Types
 export interface User {
@@ -24,6 +26,40 @@ export interface User {
   chronicConditions: string[];
   medications: string[];
   createdAt: Date;
+  userType: 'patient' | 'doctor';
+}
+
+export interface DoctorProfile {
+  userId: string;
+  specialization: string;
+  hospital: string;
+  experience: number; // years
+  education: string[];
+  licenseNumber: string;
+  availableSlots: TimeSlot[];
+}
+
+export interface TimeSlot {
+  day: string;
+  startTime: string;
+  endTime: string;
+  isBooked: boolean;
+}
+
+export interface Appointment {
+  id: string;
+  doctorId: string;
+  patientId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  type: 'in-person' | 'virtual';
+  reason: string;
+  notes: string;
+  zoomLink?: string;
+  zoomMeetingId?: string;
+  zoomPassword?: string;
 }
 
 export interface MedicalReport {
@@ -73,15 +109,7 @@ export interface RegisterData {
   allergies: string[];
   chronicConditions: string[];
   medications: string[];
-}
-
-export interface FallDetectionEvent {
-  id: string;
-  userId: string;
-  timestamp: Date;
-  location?: string;
-  severity: "low" | "medium" | "high";
-  acknowledged: boolean;
+  userType: 'patient' | 'doctor';
 }
 
 // Helper functions
@@ -279,10 +307,139 @@ export async function addHealthMetric(metricData: Omit<HealthMetric, 'id'>): Pro
   return newMetric;
 }
 
+// Doctor Profile API functions
+export async function createDoctorProfile(profileData: Omit<DoctorProfile, 'id'>): Promise<DoctorProfile> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  const newProfile: DoctorProfile = {
+    ...profileData
+  };
+  
+  doctorProfiles.push(newProfile);
+  return newProfile;
+}
+
+export async function getDoctorProfile(userId: string): Promise<DoctorProfile | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  return doctorProfiles.find(profile => profile.userId === userId) || null;
+}
+
+export async function updateDoctorProfile(userId: string, profileData: Partial<DoctorProfile>): Promise<DoctorProfile | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 700));
+  
+  const profileIndex = doctorProfiles.findIndex(p => p.userId === userId);
+  if (profileIndex === -1) return null;
+  
+  doctorProfiles[profileIndex] = { ...doctorProfiles[profileIndex], ...profileData };
+  return doctorProfiles[profileIndex];
+}
+
+export async function getAllDoctors(): Promise<(User & { doctorProfile?: DoctorProfile })[]> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  const doctors = users.filter(user => user.userType === 'doctor');
+  
+  return doctors.map(doctor => {
+    const profile = doctorProfiles.find(p => p.userId === doctor.id);
+    return {
+      ...doctor,
+      doctorProfile: profile
+    };
+  });
+}
+
+// Appointment API functions
+export async function createAppointment(appointmentData: Omit<Appointment, 'id'>): Promise<Appointment> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const newAppointment: Appointment = {
+    ...appointmentData,
+    id: generateId()
+  };
+  
+  appointments.push(newAppointment);
+  return newAppointment;
+}
+
+export async function getAppointmentsForPatient(patientId: string): Promise<Appointment[]> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 700));
+  
+  return appointments.filter(appointment => appointment.patientId === patientId);
+}
+
+export async function getAppointmentsForDoctor(doctorId: string): Promise<Appointment[]> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 700));
+  
+  return appointments.filter(appointment => appointment.doctorId === doctorId);
+}
+
+export async function updateAppointment(appointmentId: string, appointmentData: Partial<Appointment>): Promise<Appointment | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  const appointmentIndex = appointments.findIndex(a => a.id === appointmentId);
+  if (appointmentIndex === -1) return null;
+  
+  appointments[appointmentIndex] = { ...appointments[appointmentIndex], ...appointmentData };
+  return appointments[appointmentIndex];
+}
+
+export async function getDoctorAvailability(doctorId: string): Promise<TimeSlot[]> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 600));
+  
+  const doctorProfile = doctorProfiles.find(profile => profile.userId === doctorId);
+  if (!doctorProfile) return [];
+  
+  return doctorProfile.availableSlots;
+}
+
+export async function updateDoctorAvailability(doctorId: string, slots: TimeSlot[]): Promise<boolean> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+  
+  const profileIndex = doctorProfiles.findIndex(profile => profile.userId === doctorId);
+  if (profileIndex === -1) return false;
+  
+  doctorProfiles[profileIndex].availableSlots = slots;
+  return true;
+}
+
+// Generate Zoom meeting link (mock implementation)
+export async function generateZoomMeeting(appointmentId: string): Promise<{ link: string, meetingId: string, password: string } | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1200));
+  
+  // Check if appointment exists
+  const appointment = appointments.find(a => a.id === appointmentId);
+  if (!appointment) return null;
+  
+  // Generate mock zoom details
+  const zoomLink = `https://zoom.us/j/${Math.floor(Math.random() * 1000000000)}`;
+  const meetingId = `${Math.floor(Math.random() * 1000000000)}`;
+  const password = `${Math.floor(Math.random() * 10000)}`;
+  
+  // Update the appointment with zoom details
+  const appointmentIndex = appointments.findIndex(a => a.id === appointmentId);
+  appointments[appointmentIndex].zoomLink = zoomLink;
+  appointments[appointmentIndex].zoomMeetingId = meetingId;
+  appointments[appointmentIndex].zoomPassword = password;
+  
+  return { link: zoomLink, meetingId, password };
+}
+
 // Sample data initialization for testing
 export function initializeSampleData() {
-  // Create sample user
-  const user: User = {
+  // Create sample users
+  const patientUser: User = {
     id: "user1",
     name: "John Doe",
     email: "john@example.com",
@@ -294,9 +451,84 @@ export function initializeSampleData() {
     allergies: ["Penicillin", "Pollen"],
     chronicConditions: ["Asthma"],
     medications: ["Albuterol inhaler"],
-    createdAt: new Date("2023-01-15")
+    createdAt: new Date("2023-01-15"),
+    userType: "patient"
   };
-  users.push(user);
+  
+  const doctorUser: User = {
+    id: "doctor1",
+    name: "Dr. Sarah Johnson",
+    email: "doctor@example.com",
+    password: "doctor123",
+    dateOfBirth: "1975-08-22",
+    bloodType: "A+",
+    height: 165,
+    weight: 62,
+    allergies: [],
+    chronicConditions: [],
+    medications: [],
+    createdAt: new Date("2022-11-10"),
+    userType: "doctor"
+  };
+  
+  users.push(patientUser, doctorUser);
+  
+  // Create doctor profile
+  const doctorProfile: DoctorProfile = {
+    userId: "doctor1",
+    specialization: "Cardiology",
+    hospital: "City General Hospital",
+    experience: 15,
+    education: ["MD, Harvard Medical School", "Residency, Mayo Clinic"],
+    licenseNumber: "MD12345678",
+    availableSlots: [
+      {
+        day: "Monday",
+        startTime: "09:00",
+        endTime: "10:00",
+        isBooked: false
+      },
+      {
+        day: "Monday",
+        startTime: "10:00",
+        endTime: "11:00",
+        isBooked: false
+      },
+      {
+        day: "Wednesday",
+        startTime: "14:00",
+        endTime: "15:00",
+        isBooked: false
+      },
+      {
+        day: "Friday",
+        startTime: "11:00",
+        endTime: "12:00",
+        isBooked: false
+      }
+    ]
+  };
+  
+  doctorProfiles.push(doctorProfile);
+  
+  // Create sample appointments
+  const appointment: Appointment = {
+    id: "appt1",
+    doctorId: "doctor1",
+    patientId: "user1",
+    date: "2025-04-15",
+    startTime: "10:00",
+    endTime: "11:00",
+    status: "confirmed",
+    type: "virtual",
+    reason: "Annual checkup",
+    notes: "Patient has reported mild chest pain",
+    zoomLink: "https://zoom.us/j/123456789",
+    zoomMeetingId: "123456789",
+    zoomPassword: "1234"
+  };
+  
+  appointments.push(appointment);
   
   // Create sample medical reports
   const reports: MedicalReport[] = [

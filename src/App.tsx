@@ -18,6 +18,8 @@ import Emergency from "./pages/Emergency";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Appointments from "./pages/Appointments";
+import BookAppointment from "./pages/BookAppointment";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +69,16 @@ const App = () => (
             <Route path="/settings" element={
               <RequireAuth>
                 <Settings />
+              </RequireAuth>
+            } />
+            <Route path="/appointments" element={
+              <RequireAuth>
+                <Appointments />
+              </RequireAuth>
+            } />
+            <Route path="/book-appointment" element={
+              <RequireAuth>
+                <BookAppointment />
               </RequireAuth>
             } />
 

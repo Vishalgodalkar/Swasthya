@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Calendar
 } from 'lucide-react';
 import {
   Sheet,
@@ -31,6 +32,7 @@ const NavBar = () => {
   const navItems = [
     { name: 'Dashboard', icon: <Home className="h-5 w-5" />, path: '/' },
     { name: 'Medical Reports', icon: <FileText className="h-5 w-5" />, path: '/reports' },
+    { name: 'Appointments', icon: <Calendar className="h-5 w-5" />, path: '/appointments' },
     { name: 'Emergency Info', icon: <AlertTriangle className="h-5 w-5" />, path: '/emergency' },
     { name: 'Profile', icon: <User className="h-5 w-5" />, path: '/profile' },
     { name: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
