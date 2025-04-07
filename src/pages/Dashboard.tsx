@@ -234,22 +234,6 @@ const Dashboard = () => {
                 </Link>
               </CardContent>
             </Card>
-
-            {/* Fall detection status */}
-            <Card className="bg-health-blue-50 border-health-blue-200">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-center">
-                  <div className="h-16 w-16 rounded-full bg-health-blue-100 flex items-center justify-center">
-                    <div className="h-10 w-10 rounded-full bg-health-blue-500 animate-pulse-gentle"></div>
-                  </div>
-                </div>
-                <div className="mt-4 text-center">
-                  <h3 className="font-medium text-lg">Fall Detection</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Status: Active</p>
-                  <p className="text-xs mt-2">Last checked: Today, 10:15 AM</p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>

@@ -22,11 +22,6 @@ const Settings = () => {
       shareWithDoctors: true,
       shareAnonymizedData: false,
       allowEmergencyAccess: true
-    },
-    fallDetection: {
-      enabled: true,
-      sensitivityLevel: 'medium',
-      autoAlertEmergencyContacts: true
     }
   });
   
@@ -155,92 +150,6 @@ const Settings = () => {
                     onCheckedChange={(checked) => handleSwitchChange('privacy', 'allowEmergencyAccess', checked)}
                   />
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Fall Detection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Fall Detection</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="fall-detection">Enable Fall Detection</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically detect falls using your wristband
-                    </p>
-                  </div>
-                  <Switch
-                    id="fall-detection"
-                    checked={settings.fallDetection.enabled}
-                    onCheckedChange={(checked) => handleSwitchChange('fallDetection', 'enabled', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="auto-alert">Auto-Alert Emergency Contacts</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically notify emergency contacts when a fall is detected
-                    </p>
-                  </div>
-                  <Switch
-                    id="auto-alert"
-                    checked={settings.fallDetection.autoAlertEmergencyContacts}
-                    disabled={!settings.fallDetection.enabled}
-                    onCheckedChange={(checked) => handleSwitchChange('fallDetection', 'autoAlertEmergencyContacts', checked)}
-                  />
-                </div>
-
-                {settings.fallDetection.enabled && (
-                  <div className="pt-4">
-                    <p className="font-medium mb-2">Sensitivity Level</p>
-                    <div className="flex gap-4">
-                      <Button
-                        variant={settings.fallDetection.sensitivityLevel === 'low' ? 'default' : 'outline'}
-                        onClick={() => setSettings(prev => ({
-                          ...prev,
-                          fallDetection: {
-                            ...prev.fallDetection,
-                            sensitivityLevel: 'low'
-                          }
-                        }))}
-                        className="flex-1"
-                      >
-                        Low
-                      </Button>
-                      <Button
-                        variant={settings.fallDetection.sensitivityLevel === 'medium' ? 'default' : 'outline'}
-                        onClick={() => setSettings(prev => ({
-                          ...prev,
-                          fallDetection: {
-                            ...prev.fallDetection,
-                            sensitivityLevel: 'medium'
-                          }
-                        }))}
-                        className="flex-1"
-                      >
-                        Medium
-                      </Button>
-                      <Button
-                        variant={settings.fallDetection.sensitivityLevel === 'high' ? 'default' : 'outline'}
-                        onClick={() => setSettings(prev => ({
-                          ...prev,
-                          fallDetection: {
-                            ...prev.fallDetection,
-                            sensitivityLevel: 'high'
-                          }
-                        }))}
-                        className="flex-1"
-                      >
-                        High
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Higher sensitivity may increase false positives but ensures all falls are detected.
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
             
