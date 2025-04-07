@@ -12,10 +12,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { getAllDoctors, getDoctorAvailability, createAppointment, TimeSlot, DoctorProfile } from '@/lib/api';
+import { getAllDoctors, getDoctorAvailability, createAppointment, TimeSlot, DoctorProfile, User } from '@/lib/api';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Video, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -116,7 +116,7 @@ const BookAppointment = () => {
         date: format(selectedDate, 'yyyy-MM-dd'),
         startTime: selectedSlot.startTime,
         endTime: selectedSlot.endTime,
-        status: 'pending',
+        status: 'pending' as const,
         type: appointmentType,
         reason,
         notes
@@ -126,7 +126,9 @@ const BookAppointment = () => {
       
       toast({
         title: 'Appointment Booked',
-        description: 'Your appointment has been successfully booked.'
+        description: appointmentType === 'virtual' ? 
+          'Your virtual appointment has been scheduled. Zoom meeting details will be available once confirmed.' : 
+          'Your in-person appointment has been successfully booked.'
       });
       
       navigate('/appointments');
@@ -266,11 +268,17 @@ const BookAppointment = () => {
                   <RadioGroup defaultValue="virtual" onValueChange={(value) => setAppointmentType(value as 'virtual' | 'in-person')}>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="virtual" id="virtual" />
-                      <Label htmlFor="virtual">Virtual (Zoom)</Label>
+                      <Label htmlFor="virtual" className="flex items-center">
+                        <Video className="h-4 w-4 mr-2" />
+                        Virtual (Zoom)
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="in-person" id="in-person" />
-                      <Label htmlFor="in-person">In-Person</Label>
+                      <Label htmlFor="in-person" className="flex items-center">
+                        <Users className="h-4 w-4 mr-2" />
+                        In-Person
+                      </Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -351,9 +359,12 @@ const BookAppointment = () => {
                     
                     <div>
                       <h3 className="text-sm font-medium">Appointment Type</h3>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {appointmentType}
-                      </p>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        {appointmentType === 'virtual' ? 
+                          <><Video className="h-4 w-4 mr-1" /> Virtual (Zoom)</> : 
+                          <><Users className="h-4 w-4 mr-1" /> In-Person</>
+                        }
+                      </div>
                     </div>
                   </div>
                 ) : (

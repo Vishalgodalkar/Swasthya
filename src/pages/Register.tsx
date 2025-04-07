@@ -1,275 +1,267 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Please enter a valid date (YYYY-MM-DD)'),
-  bloodType: z.string().min(1, 'Please select a blood type'),
-  height: z.number().min(50, 'Height must be at least 50 cm').max(300, 'Height must be less than 300 cm'),
-  weight: z.number().min(20, 'Weight must be at least 20 kg').max(500, 'Weight must be less than 500 kg'),
-  allergies: z.string(),
-  chronicConditions: z.string(),
-  medications: z.string(),
-  userType: z.enum(['patient', 'doctor'])
-});
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
 const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [bloodType, setBloodType] = useState('');
+  const [height, setHeight] = useState<number>(0);
+  const [weight, setWeight] = useState<number>(0);
+  const [allergies, setAllergies] = useState<string>('');
+  const [chronicConditions, setChronicConditions] = useState<string>('');
+  const [medications, setMedications] = useState<string>('');
+  const [userType, setUserType] = useState<'patient' | 'doctor'>('patient');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userType, setUserType] = useState<'patient' | 'doctor'>('patient');
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      dateOfBirth: '',
-      bloodType: '',
-      height: 170,
-      weight: 70,
-      allergies: '',
-      chronicConditions: '',
-      medications: '',
-      userType: 'patient'
+  const validateForm = () => {
+    if (password !== confirmPassword) {
+      setPasswordError("Passwords don't match");
+      return false;
     }
-  });
+    setPasswordError('');
+    return true;
+  };
 
-  async function onSubmit(values: RegisterFormValues) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setIsSubmitting(true);
     
-    // Split comma separated values into arrays
-    const formattedValues = {
-      ...values,
-      allergies: values.allergies ? values.allergies.split(',').map(item => item.trim()) : [],
-      chronicConditions: values.chronicConditions ? values.chronicConditions.split(',').map(item => item.trim()) : [],
-      medications: values.medications ? values.medications.split(',').map(item => item.trim()) : [],
-      userType
-    };
-
     try {
-      const success = await register(formattedValues);
+      const userData = {
+        name,
+        email,
+        password,
+        dateOfBirth,
+        bloodType,
+        height,
+        weight,
+        allergies: allergies.split(',').map(item => item.trim()).filter(Boolean),
+        chronicConditions: chronicConditions.split(',').map(item => item.trim()).filter(Boolean),
+        medications: medications.split(',').map(item => item.trim()).filter(Boolean),
+        userType
+      };
+      
+      const success = await register(userData);
+      
       if (success) {
         navigate('/');
       }
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-muted/20 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <Card className="border-none shadow-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Create an account</CardTitle>
-            <CardDescription>Enter your details to register with VitaSecure Health</CardDescription>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex justify-center">
+          <Logo size="lg" />
+        </div>
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle className="text-2xl">Create an Account</CardTitle>
+            <CardDescription>
+              Register for VitaSecure Health to access your personal health passport
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs 
-              defaultValue="patient" 
-              onValueChange={(value) => setUserType(value as 'patient' | 'doctor')}
-              className="mb-4"
-            >
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs defaultValue="patient" onValueChange={(value) => setUserType(value as 'patient' | 'doctor')}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="patient">Patient</TabsTrigger>
                 <TabsTrigger value="doctor">Doctor</TabsTrigger>
               </TabsList>
-            </Tabs>
-
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter your full name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Enter your email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Create a password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="dateOfBirth"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date of Birth</FormLabel>
-                        <FormControl>
-                          <Input type="date" placeholder="YYYY-MM-DD" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="bloodType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Blood Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select blood type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="A+">A+</SelectItem>
-                            <SelectItem value="A-">A-</SelectItem>
-                            <SelectItem value="B+">B+</SelectItem>
-                            <SelectItem value="B-">B-</SelectItem>
-                            <SelectItem value="AB+">AB+</SelectItem>
-                            <SelectItem value="AB-">AB-</SelectItem>
-                            <SelectItem value="O+">O+</SelectItem>
-                            <SelectItem value="O-">O-</SelectItem>
-                            <SelectItem value="Unknown">Unknown</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+              
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="height"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Height (cm)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Weight (kg)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    required
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="allergies"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Allergies (comma separated)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Penicillin, Pollen, Nuts" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={isSubmitting}
+                      required
+                    />
+                    {passwordError && <p className="text-xs text-red-500">{passwordError}</p>}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="bloodType">Blood Type</Label>
+                  <Select 
+                    value={bloodType} 
+                    onValueChange={setBloodType} 
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select blood type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A+">A+</SelectItem>
+                      <SelectItem value="A-">A-</SelectItem>
+                      <SelectItem value="B+">B+</SelectItem>
+                      <SelectItem value="B-">B-</SelectItem>
+                      <SelectItem value="AB+">AB+</SelectItem>
+                      <SelectItem value="AB-">AB-</SelectItem>
+                      <SelectItem value="O+">O+</SelectItem>
+                      <SelectItem value="O-">O-</SelectItem>
+                      <SelectItem value="Unknown">Unknown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="height">Height (cm)</Label>
+                    <Input
+                      id="height"
+                      type="number"
+                      value={height || ''}
+                      onChange={(e) => setHeight(Number(e.target.value))}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weight">Weight (kg)</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      value={weight || ''}
+                      onChange={(e) => setWeight(Number(e.target.value))}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="allergies">Allergies (comma separated)</Label>
+                  <Input
+                    id="allergies"
+                    placeholder="Penicillin, Pollen, etc."
+                    value={allergies}
+                    onChange={(e) => setAllergies(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="chronicConditions">Chronic Conditions (comma separated)</Label>
+                  <Input
+                    id="chronicConditions"
+                    placeholder="Asthma, Diabetes, etc."
+                    value={chronicConditions}
+                    onChange={(e) => setChronicConditions(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="medications">Current Medications (comma separated)</Label>
+                  <Input
+                    id="medications"
+                    placeholder="Insulin, Albuterol, etc."
+                    value={medications}
+                    onChange={(e) => setMedications(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full health-gradient"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Account'
                   )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="chronicConditions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Chronic Conditions (comma separated)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Asthma, Diabetes, Hypertension" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="medications"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Current Medications (comma separated)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Insulin, Metformin, Albuterol" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? 'Registering...' : 'Register'}
                 </Button>
-
-                <div className="text-center text-sm mt-4">
-                  Already have an account?{' '}
-                  <Link to="/login" className="font-medium text-primary hover:text-primary/80">
-                    Log in
-                  </Link>
-                </div>
               </form>
-            </Form>
+            </Tabs>
           </CardContent>
+          <CardFooter className="flex justify-center">
+            <div className="text-center text-sm">
+              Already have an account?{' '}
+              <Link to="/login" className="text-health-blue-600 hover:underline">
+                Sign in
+              </Link>
+            </div>
+          </CardFooter>
         </Card>
       </div>
     </div>

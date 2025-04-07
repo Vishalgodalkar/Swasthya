@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import HealthMetricsChart from '@/components/HealthMetricsChart';
 import { User, HealthMetric, Appointment, getHealthMetrics, getAppointmentsForPatient, getAppointmentsForDoctor } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
-import { Calendar, Clock, Video } from 'lucide-react';
+import { Calendar, Clock, Video, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Dashboard = () => {
@@ -166,7 +166,7 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <div className="h-[300px]">
-                      <HealthMetricsChart data={healthMetrics} />
+                      <HealthMetricsChart metrics={healthMetrics} />
                     </div>
                   )}
                 </CardContent>

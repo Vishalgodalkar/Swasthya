@@ -6,10 +6,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Appointment, getAppointmentsForPatient, getAppointmentsForDoctor, updateAppointment, generateZoomMeeting } from '@/lib/api';
-import { Calendar, Clock, MessageSquare, Video } from 'lucide-react';
+import { Appointment, getAppointmentsForPatient, getAppointmentsForDoctor, updateAppointment, generateZoomMeeting, User } from '@/lib/api';
+import { Calendar, Clock, MessageSquare, Video, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { scheduleZoomMeeting, sendZoomMeetingNotification } from '@/lib/zoomUtils';
+import { toast as sonnerToast } from 'sonner';
 
 const Appointments = () => {
   const { user } = useAuth();
@@ -19,6 +21,7 @@ const Appointments = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [generatingMeeting, setGeneratingMeeting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -61,6 +64,12 @@ const Appointments = () => {
           title: 'Status Updated',
           description: `Appointment status changed to ${newStatus}.`
         });
+
+        // If doctor confirms a virtual appointment, generate Zoom meeting
+        if (newStatus === 'confirmed' && updatedAppointment.type === 'virtual' && 
+            user?.userType === 'doctor' && !updatedAppointment.zoomLink) {
+          handleGenerateZoomMeeting(updatedAppointment);
+        }
       }
     } catch (error) {
       console.error('Error updating appointment status:', error);
@@ -72,38 +81,70 @@ const Appointments = () => {
     }
   };
 
+  const handleGenerateZoomMeeting = async (appointment: Appointment) => {
+    if (generatingMeeting) return;
+    
+    setGeneratingMeeting(true);
+    setSelectedAppointment(appointment);
+    
+    try {
+      sonnerToast.loading("Generating Zoom meeting...");
+      
+      // Using the mock generateZoomMeeting function from api.ts
+      const zoomDetails = await generateZoomMeeting(appointment.id);
+      
+      if (zoomDetails) {
+        // Update the appointment in our local state with the zoom details
+        const updatedAppointment = {
+          ...appointment,
+          zoomLink: zoomDetails.link,
+          zoomMeetingId: zoomDetails.meetingId,
+          zoomPassword: zoomDetails.password
+        };
+        
+        setSelectedAppointment(updatedAppointment);
+        
+        // Update the appointments list
+        setAppointments(prevAppointments =>
+          prevAppointments.map(appt => appt.id === appointment.id ? updatedAppointment : appt)
+        );
+        
+        // Notify patient about the meeting
+        // In a real app, this would send an email to the patient
+        sonnerToast.success("Zoom meeting created successfully!");
+        
+        // Show meeting details dialog
+        setZoomDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error generating Zoom meeting:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to create Zoom meeting. Please try again.'
+      });
+    } finally {
+      setGeneratingMeeting(false);
+      sonnerToast.dismiss();
+    }
+  };
+
   const handleStartZoomMeeting = async (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     
     if (!appointment.zoomLink) {
-      try {
-        const zoomDetails = await generateZoomMeeting(appointment.id);
-        if (zoomDetails) {
-          // Update the appointment in our local state with the zoom details
-          const updatedAppointment = {
-            ...appointment,
-            zoomLink: zoomDetails.link,
-            zoomMeetingId: zoomDetails.meetingId,
-            zoomPassword: zoomDetails.password
-          };
-          setSelectedAppointment(updatedAppointment);
-          
-          // Update the appointments list
-          setAppointments(prevAppointments =>
-            prevAppointments.map(appt => appt.id === appointment.id ? updatedAppointment : appt)
-          );
-        }
-      } catch (error) {
-        console.error('Error generating Zoom meeting:', error);
+      if (user?.userType === 'doctor') {
+        handleGenerateZoomMeeting(appointment);
+      } else {
         toast({
           variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to create Zoom meeting. Please try again.'
+          title: 'No meeting link available',
+          description: 'The doctor has not yet created the Zoom meeting. Please check back later.'
         });
       }
+    } else {
+      setZoomDialogOpen(true);
     }
-    
-    setZoomDialogOpen(true);
   };
 
   const filterAppointments = (status: 'upcoming' | 'past' | 'all') => {
@@ -138,6 +179,22 @@ const Appointments = () => {
       default:
         return 'bg-gray-500';
     }
+  };
+
+  const isWithinOneHourOfAppointment = (appointment: Appointment): boolean => {
+    const now = new Date();
+    const appointmentDate = new Date(appointment.date);
+    appointmentDate.setHours(
+      parseInt(appointment.startTime.split(':')[0]),
+      parseInt(appointment.startTime.split(':')[1])
+    );
+    
+    // Calculate the difference in milliseconds
+    const differenceMs = appointmentDate.getTime() - now.getTime();
+    const differenceHours = differenceMs / (1000 * 60 * 60);
+    
+    // Return true if the appointment is within 1 hour (before or after)
+    return Math.abs(differenceHours) <= 1;
   };
 
   if (!user) return null;
@@ -215,9 +272,12 @@ const Appointments = () => {
                           {appointment.type === 'virtual' ? (
                             <Video className="h-5 w-5 text-muted-foreground" />
                           ) : (
-                            <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                            <Users className="h-5 w-5 text-muted-foreground" />
                           )}
                           <span>{appointment.type === 'virtual' ? 'Virtual Meeting' : 'In-Person'}</span>
+                          {appointment.type === 'virtual' && appointment.zoomLink && (
+                            <Badge variant="outline" className="ml-2">Zoom Ready</Badge>
+                          )}
                         </div>
                       </div>
                       {appointment.notes && (
@@ -241,8 +301,12 @@ const Appointments = () => {
                       )}
                       
                       {appointment.type === 'virtual' && appointment.status === 'confirmed' && (
-                        <Button variant="secondary" onClick={() => handleStartZoomMeeting(appointment)}>
-                          Join Meeting
+                        <Button 
+                          variant={isWithinOneHourOfAppointment(appointment) ? "default" : "secondary"}
+                          onClick={() => handleStartZoomMeeting(appointment)}
+                          className={isWithinOneHourOfAppointment(appointment) ? "bg-blue-600 hover:bg-blue-700" : ""}
+                        >
+                          {appointment.zoomLink ? "Join Meeting" : "Generate Meeting"}
                         </Button>
                       )}
                       
@@ -265,11 +329,13 @@ const Appointments = () => {
           <DialogHeader>
             <DialogTitle>Zoom Meeting Details</DialogTitle>
             <DialogDescription>
-              Use the information below to join the virtual appointment.
+              {user?.userType === 'doctor' ? 
+                "Share this information with your patient for the virtual appointment." :
+                "Use the information below to join the virtual appointment."}
             </DialogDescription>
           </DialogHeader>
           
-          {selectedAppointment && (
+          {selectedAppointment && selectedAppointment.zoomLink && (
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium mb-1">Meeting Link</h4>
@@ -291,6 +357,11 @@ const Appointments = () => {
               <div>
                 <h4 className="font-medium mb-1">Password</h4>
                 <p>{selectedAppointment.zoomPassword}</p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-1">Appointment Time</h4>
+                <p>{new Date(selectedAppointment.date).toLocaleDateString()} at {selectedAppointment.startTime}</p>
               </div>
             </div>
           )}
