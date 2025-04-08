@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,74 +26,76 @@ import BookAppointment from "./pages/BookAppointment";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
 
-            {/* Protected routes */}
-            <Route path="/" element={
-              <RequireAuth>
-                <Dashboard />
-              </RequireAuth>
-            } />
-            <Route path="/reports" element={
-              <RequireAuth>
-                <Reports />
-              </RequireAuth>
-            } />
-            <Route path="/reports/:id" element={
-              <RequireAuth>
-                <ReportDetail />
-              </RequireAuth>
-            } />
-            <Route path="/reports/new" element={
-              <RequireAuth>
-                <NewReport />
-              </RequireAuth>
-            } />
-            <Route path="/emergency" element={
-              <RequireAuth>
-                <Emergency />
-              </RequireAuth>
-            } />
-            <Route path="/profile" element={
-              <RequireAuth>
-                <Profile />
-              </RequireAuth>
-            } />
-            <Route path="/settings" element={
-              <RequireAuth>
-                <Settings />
-              </RequireAuth>
-            } />
-            <Route path="/appointments" element={
-              <RequireAuth>
-                <Appointments />
-              </RequireAuth>
-            } />
-            <Route path="/book-appointment" element={
-              <RequireAuth>
-                <BookAppointment />
-              </RequireAuth>
-            } />
+              {/* Protected routes */}
+              <Route path="/" element={
+                <RequireAuth>
+                  <Dashboard />
+                </RequireAuth>
+              } />
+              <Route path="/reports" element={
+                <RequireAuth>
+                  <Reports />
+                </RequireAuth>
+              } />
+              <Route path="/reports/:id" element={
+                <RequireAuth>
+                  <ReportDetail />
+                </RequireAuth>
+              } />
+              <Route path="/reports/new" element={
+                <RequireAuth>
+                  <NewReport />
+                </RequireAuth>
+              } />
+              <Route path="/emergency" element={
+                <RequireAuth>
+                  <Emergency />
+                </RequireAuth>
+              } />
+              <Route path="/profile" element={
+                <RequireAuth>
+                  <Profile />
+                </RequireAuth>
+              } />
+              <Route path="/settings" element={
+                <RequireAuth>
+                  <Settings />
+                </RequireAuth>
+              } />
+              <Route path="/appointments" element={
+                <RequireAuth>
+                  <Appointments />
+                </RequireAuth>
+              } />
+              <Route path="/book-appointment" element={
+                <RequireAuth>
+                  <BookAppointment />
+                </RequireAuth>
+              } />
 
-            {/* Redirect forgotten routes to login */}
-            <Route path="/login" element={<Navigate to="/login" />} />
-            
-            {/* 404 route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+              {/* Redirect root to dashboard if logged in */}
+              <Route path="/" element={<Navigate to="/login" />} />
+              
+              {/* 404 route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;

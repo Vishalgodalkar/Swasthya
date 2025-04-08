@@ -11,6 +11,9 @@ interface AuthContextType {
   logout: () => void;
   isDoctor: () => boolean;
   isPatient: () => boolean;
+  isDoctorOrPatient: (type: 'doctor' | 'patient') => boolean;
+  getUserName: () => string;
+  getUserId: () => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -118,6 +121,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isPatient = () => {
     return user?.userType === 'patient';
   };
+  
+  const isDoctorOrPatient = (type: 'doctor' | 'patient') => {
+    return user?.userType === type;
+  };
+  
+  const getUserName = () => {
+    return user?.name || 'User';
+  };
+  
+  const getUserId = () => {
+    return user?.id || '';
+  };
 
   return (
     <AuthContext.Provider value={{ 
@@ -127,7 +142,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register, 
       logout, 
       isDoctor, 
-      isPatient 
+      isPatient,
+      isDoctorOrPatient,
+      getUserName,
+      getUserId
     }}>
       {children}
     </AuthContext.Provider>

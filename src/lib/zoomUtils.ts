@@ -12,7 +12,7 @@ export interface ZoomMeetingDetails {
   meetingId: string;
   password: string;
   joinUrl: string;
-  hostUrl: string;
+  hostUrl: string; // For doctors
   topic: string;
   startTime: string;
   duration: number;
@@ -26,12 +26,13 @@ export async function createZoomMeeting(
   topic: string,
   startTime: string,
   duration: number = 30,
-  doctorName: string
+  doctorName: string,
+  patientName?: string
 ): Promise<ZoomMeetingDetails> {
-  console.log("Creating Zoom meeting with:", { topic, startTime, duration, doctorName });
+  console.log("Creating Zoom meeting with:", { topic, startTime, duration, doctorName, patientName });
   
   // This is a mock implementation
-  // In a real app, you would make API calls to Zoom
+  // In a real app, you would make API calls to Zoom using their SDK or REST API
   return new Promise((resolve) => {
     // Simulate API delay
     setTimeout(() => {
@@ -39,6 +40,8 @@ export async function createZoomMeeting(
       const meetingId = Math.floor(Math.random() * 1000000000).toString();
       const password = Math.random().toString(36).substring(2, 8);
       
+      // In a real implementation, you would use the Zoom API to create a meeting
+      // and get back the meeting details including URLs
       resolve({
         meetingId,
         password,
@@ -55,8 +58,8 @@ export async function createZoomMeeting(
 /**
  * Schedule a Zoom meeting for an appointment
  */
-export async function scheduleZoomMeeting(appointment: Appointment, doctorName: string): Promise<ZoomMeetingDetails> {
-  const topic = `Medical Consultation: ${doctorName}`;
+export async function scheduleZoomMeeting(appointment: Appointment, doctorName: string, patientName?: string): Promise<ZoomMeetingDetails> {
+  const topic = `Medical Consultation: Dr. ${doctorName}${patientName ? ` with ${patientName}` : ''}`;
   
   // Format: 2023-04-15T14:00:00Z
   const startTime = `${appointment.date}T${appointment.startTime}:00`;
@@ -69,7 +72,7 @@ export async function scheduleZoomMeeting(appointment: Appointment, doctorName: 
   
   const durationMinutes = (endHour - startHour) * 60 + (endMinute - startMinute);
   
-  return createZoomMeeting(topic, startTime, durationMinutes, doctorName);
+  return createZoomMeeting(topic, startTime, durationMinutes, doctorName, patientName);
 }
 
 /**
@@ -79,7 +82,8 @@ export async function scheduleZoomMeeting(appointment: Appointment, doctorName: 
 export async function sendZoomMeetingNotification(
   recipientEmail: string,
   recipientName: string,
-  meetingDetails: ZoomMeetingDetails
+  meetingDetails: ZoomMeetingDetails,
+  isDoctor: boolean = false
 ): Promise<boolean> {
   console.log("Sending meeting notification to:", recipientEmail);
   
@@ -89,7 +93,10 @@ export async function sendZoomMeetingNotification(
     // Simulate API delay
     setTimeout(() => {
       console.log(`Email notification sent to ${recipientName} (${recipientEmail})`);
-      console.log(`Meeting link: ${meetingDetails.joinUrl}`);
+      console.log(`Meeting link: ${isDoctor ? meetingDetails.hostUrl : meetingDetails.joinUrl}`);
+      console.log(`Meeting ID: ${meetingDetails.meetingId}`);
+      console.log(`Meeting Password: ${meetingDetails.password}`);
+      console.log(`Meeting Time: ${new Date(meetingDetails.startTime).toLocaleString()}`);
       resolve(true);
     }, 500);
   });
@@ -111,4 +118,90 @@ export function parseZoomUrl(url: string): { meetingId: string; password: string
     console.error("Failed to parse Zoom URL:", error);
     return null;
   }
+}
+
+/**
+ * Check if a meeting is currently active
+ * In a real implementation, this would use the Zoom API
+ */
+export async function checkMeetingStatus(meetingId: string): Promise<'waiting' | 'active' | 'ended' | 'not_found'> {
+  console.log("Checking status for meeting:", meetingId);
+  
+  // This is a mock implementation
+  // In a real app, you would use the Zoom API to check the meeting status
+  return new Promise((resolve) => {
+    // Simulate API delay
+    setTimeout(() => {
+      // Mock implementation - randomly returns a status
+      // In a real app, this would call the Zoom API
+      const statuses = ['waiting', 'active', 'ended', 'not_found'] as const;
+      const randomStatus = statuses[Math.floor(Math.random() * 3)]; // Excluding 'not_found' most of the time
+      
+      console.log(`Meeting ${meetingId} status: ${randomStatus}`);
+      resolve(randomStatus);
+    }, 800);
+  });
+}
+
+/**
+ * End an active Zoom meeting
+ * In a real implementation, this would use the Zoom API
+ */
+export async function endZoomMeeting(meetingId: string): Promise<boolean> {
+  console.log("Ending meeting:", meetingId);
+  
+  // This is a mock implementation
+  // In a real app, you would make API calls to Zoom
+  return new Promise((resolve) => {
+    // Simulate API delay
+    setTimeout(() => {
+      console.log(`Meeting ${meetingId} ended successfully`);
+      resolve(true);
+    }, 800);
+  });
+}
+
+/**
+ * Get OAuth URL for Zoom authentication
+ * In a real implementation, this would generate the proper OAuth URL
+ */
+export function getZoomOAuthUrl(): string {
+  // This is a placeholder
+  // In a real app, this would generate a proper OAuth URL
+  return `https://zoom.us/oauth/authorize?response_type=code&client_id=${ZOOM_API_KEY}&redirect_uri=YOUR_REDIRECT_URI`;
+}
+
+/**
+ * Extract Zoom OAuth code from URL
+ */
+export function extractZoomOAuthCode(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.searchParams.get('code');
+  } catch (error) {
+    console.error("Failed to extract Zoom OAuth code:", error);
+    return null;
+  }
+}
+
+/**
+ * Exchange OAuth code for access token
+ * In a real implementation, this would call the Zoom API
+ */
+export async function exchangeZoomOAuthCode(code: string): Promise<{
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+}> {
+  // This is a mock implementation
+  // In a real app, you would call the Zoom API
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        access_token: "mock_access_token_" + Math.random().toString(36).substring(2),
+        refresh_token: "mock_refresh_token_" + Math.random().toString(36).substring(2),
+        expires_in: 3600
+      });
+    }, 1000);
+  });
 }

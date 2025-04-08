@@ -10,11 +10,11 @@ import { Appointment, getAppointmentsForPatient, getAppointmentsForDoctor, updat
 import { Calendar, Clock, MessageSquare, Video, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { scheduleZoomMeeting, sendZoomMeetingNotification } from '@/lib/zoomUtils';
+import { scheduleZoomMeeting, sendZoomMeetingNotification, checkMeetingStatus } from '@/lib/zoomUtils';
 import { toast as sonnerToast } from 'sonner';
 
 const Appointments = () => {
-  const { user } = useAuth();
+  const { user, isDoctor, isPatient, getUserName } = useAuth();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +22,7 @@ const Appointments = () => {
   const [zoomDialogOpen, setZoomDialogOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [generatingMeeting, setGeneratingMeeting] = useState(false);
+  const [meetingStatus, setMeetingStatus] = useState<'waiting' | 'active' | 'ended' | 'not_found' | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -109,8 +110,7 @@ const Appointments = () => {
           prevAppointments.map(appt => appt.id === appointment.id ? updatedAppointment : appt)
         );
         
-        // Notify patient about the meeting
-        // In a real app, this would send an email to the patient
+        // Notify patient about the meeting (in real app this would send email)
         sonnerToast.success("Zoom meeting created successfully!");
         
         // Show meeting details dialog
@@ -143,6 +143,14 @@ const Appointments = () => {
         });
       }
     } else {
+      // Check meeting status first
+      if (appointment.zoomMeetingId) {
+        sonnerToast.loading("Checking meeting status...");
+        const status = await checkMeetingStatus(appointment.zoomMeetingId);
+        setMeetingStatus(status);
+        sonnerToast.dismiss();
+      }
+      
       setZoomDialogOpen(true);
     }
   };
@@ -206,7 +214,9 @@ const Appointments = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">Appointments</h1>
           <p className="text-muted-foreground">
-            Manage your medical appointments
+            {isDoctor() 
+              ? "Manage your patient consultations and virtual meetings" 
+              : "View and manage your medical appointments"}
           </p>
         </div>
 
@@ -218,7 +228,7 @@ const Appointments = () => {
               <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
             
-            {user.userType === 'patient' && (
+            {isPatient() && (
               <Button asChild>
                 <a href="/book-appointment">Book New Appointment</a>
               </Button>
@@ -232,7 +242,7 @@ const Appointments = () => {
               ) : filterAppointments(tab as 'upcoming' | 'past' | 'all').length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-muted-foreground">No {tab} appointments found.</p>
-                  {tab === 'upcoming' && user.userType === 'patient' && (
+                  {tab === 'upcoming' && isPatient() && (
                     <Button variant="outline" className="mt-4" asChild>
                       <a href="/book-appointment">Book an Appointment</a>
                     </Button>
@@ -245,7 +255,7 @@ const Appointments = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle>
-                            {user.userType === 'patient' ? (
+                            {isPatient() ? (
                               <>Appointment with Dr. {appointment.doctorId}</>
                             ) : (
                               <>Appointment with {appointment.patientId}</>
@@ -253,9 +263,16 @@ const Appointments = () => {
                           </CardTitle>
                           <CardDescription>{appointment.reason}</CardDescription>
                         </div>
-                        <Badge className={getStatusBadgeColor(appointment.status)}>
-                          {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={getStatusBadgeColor(appointment.status)}>
+                            {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                          </Badge>
+                          {appointment.type === 'virtual' && appointment.zoomLink && (
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Video className="h-3 w-3" /> Zoom Ready
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -275,9 +292,6 @@ const Appointments = () => {
                             <Users className="h-5 w-5 text-muted-foreground" />
                           )}
                           <span>{appointment.type === 'virtual' ? 'Virtual Meeting' : 'In-Person'}</span>
-                          {appointment.type === 'virtual' && appointment.zoomLink && (
-                            <Badge variant="outline" className="ml-2">Zoom Ready</Badge>
-                          )}
                         </div>
                       </div>
                       {appointment.notes && (
@@ -288,7 +302,7 @@ const Appointments = () => {
                       )}
                     </CardContent>
                     <CardFooter className="flex justify-end gap-2 p-4 pt-0">
-                      {appointment.status === 'pending' && user.userType === 'doctor' && (
+                      {appointment.status === 'pending' && isDoctor() && (
                         <Button onClick={() => handleStatusChange(appointment.id, 'confirmed')}>
                           Confirm
                         </Button>
@@ -304,13 +318,17 @@ const Appointments = () => {
                         <Button 
                           variant={isWithinOneHourOfAppointment(appointment) ? "default" : "secondary"}
                           onClick={() => handleStartZoomMeeting(appointment)}
-                          className={isWithinOneHourOfAppointment(appointment) ? "bg-blue-600 hover:bg-blue-700" : ""}
+                          className={`gap-2 ${isWithinOneHourOfAppointment(appointment) ? "bg-blue-600 hover:bg-blue-700" : ""}`}
                         >
-                          {appointment.zoomLink ? "Join Meeting" : "Generate Meeting"}
+                          <Video className="h-4 w-4" />
+                          {isDoctor() ? 
+                            (appointment.zoomLink ? "Start Meeting" : "Generate Meeting") : 
+                            "Join Meeting"
+                          }
                         </Button>
                       )}
                       
-                      {appointment.status === 'confirmed' && user.userType === 'doctor' && (
+                      {appointment.status === 'confirmed' && isDoctor() && (
                         <Button onClick={() => handleStatusChange(appointment.id, 'completed')}>
                           Mark Completed
                         </Button>
@@ -329,7 +347,7 @@ const Appointments = () => {
           <DialogHeader>
             <DialogTitle>Zoom Meeting Details</DialogTitle>
             <DialogDescription>
-              {user?.userType === 'doctor' ? 
+              {isDoctor() ? 
                 "Share this information with your patient for the virtual appointment." :
                 "Use the information below to join the virtual appointment."}
             </DialogDescription>
@@ -363,11 +381,24 @@ const Appointments = () => {
                 <h4 className="font-medium mb-1">Appointment Time</h4>
                 <p>{new Date(selectedAppointment.date).toLocaleDateString()} at {selectedAppointment.startTime}</p>
               </div>
+              
+              {meetingStatus && (
+                <div>
+                  <h4 className="font-medium mb-1">Meeting Status</h4>
+                  <Badge className={
+                    meetingStatus === 'active' ? 'bg-green-500' :
+                    meetingStatus === 'waiting' ? 'bg-yellow-500' :
+                    meetingStatus === 'ended' ? 'bg-gray-500' : 'bg-red-500'
+                  }>
+                    {meetingStatus.charAt(0).toUpperCase() + meetingStatus.slice(1)}
+                  </Badge>
+                </div>
+              )}
             </div>
           )}
           
           <DialogFooter>
-            <Button onClick={() => setZoomDialogOpen(false)}>Close</Button>
+            <Button onClick={() => setZoomDialogOpen(false)} variant="outline">Close</Button>
             {selectedAppointment?.zoomLink && (
               <Button asChild>
                 <a href={selectedAppointment.zoomLink} target="_blank" rel="noreferrer">
