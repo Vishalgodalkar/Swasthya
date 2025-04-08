@@ -124,7 +124,7 @@ export function parseZoomUrl(url: string): { meetingId: string; password: string
  * Check if a meeting is currently active
  * In a real implementation, this would use the Zoom API
  */
-export async function checkMeetingStatus(meetingId: string): Promise<'waiting' | 'active' | 'ended' | 'not_found'> {
+export async function checkMeetingStatus(meetingId: string): Promise<'waiting' | 'active' | 'ended' | 'not_found' | 'cancelled'> {
   console.log("Checking status for meeting:", meetingId);
   
   // This is a mock implementation
@@ -134,8 +134,9 @@ export async function checkMeetingStatus(meetingId: string): Promise<'waiting' |
     setTimeout(() => {
       // Mock implementation - randomly returns a status
       // In a real app, this would call the Zoom API
-      const statuses = ['waiting', 'active', 'ended', 'not_found'] as const;
-      const randomStatus = statuses[Math.floor(Math.random() * 3)]; // Excluding 'not_found' most of the time
+      const statuses = ['waiting', 'active', 'ended', 'cancelled', 'not_found'] as const;
+      const randomIndex = Math.floor(Math.random() * 3); // Predominantly return the first 3 statuses
+      const randomStatus = statuses[randomIndex]; 
       
       console.log(`Meeting ${meetingId} status: ${randomStatus}`);
       resolve(randomStatus);
@@ -204,4 +205,35 @@ export async function exchangeZoomOAuthCode(code: string): Promise<{
       });
     }, 1000);
   });
+}
+
+/**
+ * Generate a Zoom SDK signature for client-side integration
+ * In a real implementation, this would use the Zoom SDK algorithm
+ */
+export function generateZoomSignature(meetingNumber: string, role: number = 0): string {
+  // This is a mock implementation
+  // In a real app, you would generate a proper signature using the Zoom SDK algorithm
+  // Role: 0 for participants, 1 for host
+  return `mock_signature_${meetingNumber}_${role}_${Date.now()}`;
+}
+
+/**
+ * Get Zoom SDK configuration for client-side integration
+ */
+export function getZoomSdkConfig(meetingNumber: string, userName: string, userEmail: string, role: number = 0): {
+  apiKey: string;
+  signature: string;
+  meetingNumber: string;
+  userName: string;
+  userEmail: string;
+  passWord?: string;
+} {
+  return {
+    apiKey: ZOOM_API_KEY,
+    signature: generateZoomSignature(meetingNumber, role),
+    meetingNumber: meetingNumber,
+    userName: userName,
+    userEmail: userEmail
+  };
 }
