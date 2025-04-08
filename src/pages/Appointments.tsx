@@ -147,7 +147,13 @@ const Appointments = () => {
       if (appointment.zoomMeetingId) {
         sonnerToast.loading("Checking meeting status...");
         const status = await checkMeetingStatus(appointment.zoomMeetingId);
-        setMeetingStatus(status);
+        // Make sure we only set allowed values
+        if (status === 'waiting' || status === 'active' || status === 'ended' || status === 'not_found') {
+          setMeetingStatus(status);
+        } else {
+          // Set to null or another appropriate fallback if we get an unexpected status
+          setMeetingStatus(null);
+        }
         sonnerToast.dismiss();
       }
       
