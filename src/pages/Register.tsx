@@ -80,7 +80,7 @@ const Register = () => {
           <CardHeader>
             <CardTitle className="text-2xl">Create an Account</CardTitle>
             <CardDescription>
-              Register for VitaSecure Health to access your personal health passport
+              Register for TeleHealth to access your personal health passport
             </CardDescription>
           </CardHeader>
           <CardContent>

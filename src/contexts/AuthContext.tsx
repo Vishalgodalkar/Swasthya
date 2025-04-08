@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, loginUser, registerUser, RegisterData, LoginCredentials } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
@@ -25,13 +24,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Check for stored user session on component mount
-    const storedUser = localStorage.getItem('vita-secure-user');
+    const storedUser = localStorage.getItem('telehealth-user');
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('vita-secure-user');
+        localStorage.removeItem('telehealth-user');
       }
     }
     setLoading(false);
@@ -44,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (loggedInUser) {
         setUser(loggedInUser);
-        localStorage.setItem('vita-secure-user', JSON.stringify(loggedInUser));
+        localStorage.setItem('telehealth-user', JSON.stringify(loggedInUser));
         toast({
           title: 'Login successful',
           description: `Welcome back, ${loggedInUser.name}!`,
@@ -78,10 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (newUser) {
         setUser(newUser);
-        localStorage.setItem('vita-secure-user', JSON.stringify(newUser));
+        localStorage.setItem('telehealth-user', JSON.stringify(newUser));
         toast({
           title: 'Registration successful',
-          description: `Welcome to VitaSecure Health, ${newUser.name}!`,
+          description: `Welcome to TeleHealth, ${newUser.name}!`,
         });
         return true;
       } else {
@@ -107,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('vita-secure-user');
+    localStorage.removeItem('telehealth-user');
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out.',

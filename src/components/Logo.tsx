@@ -27,8 +27,8 @@ const Logo: React.FC<LogoProps> = ({ size = 'md', showText = true }) => {
       </div>
       {showText && (
         <div className={`font-bold ${textClasses[size]}`}>
-          <span className="text-health-blue-600">Vita</span>
-          <span className="text-health-green-600">Secure</span>
+          <span className="text-health-blue-600">Tele</span>
+          <span className="text-health-green-600">Health</span>
         </div>
       )}
     </div>
