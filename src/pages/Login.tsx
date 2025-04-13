@@ -30,11 +30,23 @@ const Login = () => {
     }
   };
 
-  // For demo purposes, provide sample login
-  const handleDemoLogin = async () => {
+  // For demo purposes, provide sample logins
+  const handleDemoPatientLogin = async () => {
     setIsSubmitting(true);
     try {
       const success = await login({ email: 'john@example.com', password: 'password123' });
+      if (success) {
+        navigate('/');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDemoDoctorLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      const success = await login({ email: 'dr.smith@example.com', password: 'password123' });
       if (success) {
         navigate('/');
       }
@@ -104,14 +116,24 @@ const Login = () => {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button
-              variant="outline"
-              onClick={handleDemoLogin}
-              disabled={isSubmitting}
-              className="w-full mb-4"
-            >
-              Try with Demo Account
-            </Button>
+            <div className="grid grid-cols-2 gap-2 w-full mb-4">
+              <Button
+                variant="outline"
+                onClick={handleDemoPatientLogin}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                Demo Patient
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleDemoDoctorLogin}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                Demo Doctor
+              </Button>
+            </div>
             <div className="text-center text-sm">
               Don't have an account?{' '}
               <Link to="/register" className="text-health-blue-600 hover:underline">

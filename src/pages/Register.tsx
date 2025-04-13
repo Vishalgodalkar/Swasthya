@@ -70,9 +70,9 @@ interface RegisterData {
   height: number;
   weight: number;
   userType: string;
-  allergies?: string[];
-  chronicConditions?: string[];
-  medications?: string[];
+  allergies: string[];
+  chronicConditions: string[];
+  medications: string[];
   specialization?: string;
   experience?: number;
   licenseNumber?: string;
@@ -225,7 +225,6 @@ const Register = () => {
         qualifications: data.qualifications,
         bio: data.bio
         // Not sending the files directly to registerUser, as they would need special handling
-        // Instead, we would typically upload these to a storage service and store the URLs
       };
       
       const success = await registerUser(userData);
