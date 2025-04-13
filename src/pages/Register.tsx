@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +15,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
-const patientSchema = z.object({
+// Define base schema without the refine() at this level
+const basePatientSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
@@ -28,12 +28,17 @@ const patientSchema = z.object({
   allergies: z.string().optional(),
   chronicConditions: z.string().optional(),
   medications: z.string().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
+});
+
+// Create the patientSchema with the refine after
+const patientSchema = basePatientSchema.refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
-const doctorSchema = patientSchema.extend({
+// Extend the base schema for doctors, then add refine separately
+const doctorSchema = z.object({
+  ...basePatientSchema.shape,
   specialization: z.string().min(1, { message: "Specialization is required" }),
   experience: z.number().int().positive({ message: "Experience must be a positive number" }),
   licenseNumber: z.string().min(1, { message: "License number is required" }),
@@ -47,10 +52,35 @@ const doctorSchema = patientSchema.extend({
     })
   ).min(1, { message: "At least one qualification is required" }),
   bio: z.string().max(500, { message: "Bio cannot be more than 500 characters" }).optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type PatientFormValues = z.infer<typeof patientSchema>;
 type DoctorFormValues = z.infer<typeof doctorSchema>;
+
+// Define RegisterData interface to match what Auth context expects
+interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  dateOfBirth: string;
+  bloodType: string;
+  height: number;
+  weight: number;
+  userType: string;
+  allergies?: string[];
+  chronicConditions?: string[];
+  medications?: string[];
+  specialization?: string;
+  experience?: number;
+  licenseNumber?: string;
+  licenseAuthority?: string;
+  consultationFee?: number;
+  qualifications?: Array<{degree: string, institution: string, year: number}>;
+  bio?: string;
+}
 
 const Register = () => {
   const [userType, setUserType] = useState<'patient' | 'doctor'>('patient');
@@ -130,8 +160,14 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      const userData = {
-        ...data,
+      const userData: RegisterData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        dateOfBirth: data.dateOfBirth,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
         allergies: data.allergies ? data.allergies.split(',').map(item => item.trim()).filter(Boolean) : [],
         chronicConditions: data.chronicConditions ? data.chronicConditions.split(',').map(item => item.trim()).filter(Boolean) : [],
         medications: data.medications ? data.medications.split(',').map(item => item.trim()).filter(Boolean) : [],
@@ -169,12 +205,25 @@ const Register = () => {
       // In a real implementation, we would handle file uploads here
       // For now, we're just simulating it
       
-      const userData = {
-        ...data,
+      const userData: RegisterData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        dateOfBirth: data.dateOfBirth,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
         allergies: data.allergies ? data.allergies.split(',').map(item => item.trim()).filter(Boolean) : [],
         chronicConditions: data.chronicConditions ? data.chronicConditions.split(',').map(item => item.trim()).filter(Boolean) : [],
         medications: data.medications ? data.medications.split(',').map(item => item.trim()).filter(Boolean) : [],
         userType: 'doctor',
+        specialization: data.specialization,
+        experience: data.experience,
+        licenseNumber: data.licenseNumber,
+        licenseAuthority: data.licenseAuthority,
+        consultationFee: data.consultationFee,
+        qualifications: data.qualifications,
+        bio: data.bio
         // Not sending the files directly to registerUser, as they would need special handling
         // Instead, we would typically upload these to a storage service and store the URLs
       };
@@ -770,7 +819,7 @@ const Register = () => {
                             <FormLabel>Current Medications (comma separated)</FormLabel>
                             <FormControl>
                               <Input placeholder="Optional" {...field} disabled={isSubmitting} />
-                            </FormControl>
+                            FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
