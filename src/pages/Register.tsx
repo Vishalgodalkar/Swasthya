@@ -819,7 +819,7 @@ const Register = () => {
                             <FormLabel>Current Medications (comma separated)</FormLabel>
                             <FormControl>
                               <Input placeholder="Optional" {...field} disabled={isSubmitting} />
-                            FormControl>
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
