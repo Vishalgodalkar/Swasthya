@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +35,16 @@ const Login = () => {
   const handleDemoPatientLogin = async () => {
     setIsSubmitting(true);
     try {
+      console.log("Demo patient login attempt");
       const success = await login({ email: 'john@example.com', password: 'password123' });
       if (success) {
+        toast({
+          title: 'Demo Patient Login',
+          description: 'Successfully logged in as demo patient',
+        });
         navigate('/');
+      } else {
+        console.error("Demo patient login failed");
       }
     } finally {
       setIsSubmitting(false);
@@ -45,9 +54,16 @@ const Login = () => {
   const handleDemoDoctorLogin = async () => {
     setIsSubmitting(true);
     try {
+      console.log("Demo doctor login attempt");
       const success = await login({ email: 'dr.smith@example.com', password: 'password123' });
       if (success) {
+        toast({
+          title: 'Demo Doctor Login',
+          description: 'Successfully logged in as demo doctor',
+        });
         navigate('/');
+      } else {
+        console.error("Demo doctor login failed");
       }
     } finally {
       setIsSubmitting(false);

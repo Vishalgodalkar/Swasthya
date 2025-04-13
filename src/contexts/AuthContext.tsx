@@ -66,7 +66,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ],
           experience: 12,
           consultationFee: 150,
-          bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.'
+          bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.',
+          // Add necessary patient properties as null to satisfy TypeScript
+          dateOfBirth: null,
+          bloodType: null,
+          height: null,
+          weight: null,
+          allergies: [],
+          chronicConditions: [],
+          medications: []
         };
         
         setUser(demoDoctor);
@@ -96,7 +104,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           weight: 70,
           allergies: ['Peanuts', 'Penicillin'],
           chronicConditions: ['Asthma'],
-          medications: ['Albuterol', 'Vitamin D']
+          medications: ['Albuterol', 'Vitamin D'],
+          // Add necessary doctor properties as null to satisfy TypeScript
+          specialization: null,
+          qualifications: null,
+          experience: null,
+          consultationFee: null,
+          bio: null
         };
         
         setUser(demoPatient);
