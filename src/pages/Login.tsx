@@ -30,7 +30,6 @@ const Login = () => {
     }
   };
 
-  // For demo purposes, provide sample logins
   const handleDemoPatientLogin = async () => {
     setIsSubmitting(true);
     try {

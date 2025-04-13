@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, loginUser, registerUser, RegisterData, LoginCredentials } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
@@ -39,6 +40,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setLoading(true);
+      
+      // Handle demo logins locally
+      if (credentials.email === 'dr.smith@example.com' && credentials.password === 'password123') {
+        // Create demo doctor user object
+        const demoDoctor: User = {
+          id: 'demo-doctor-id',
+          name: 'Dr. Sarah Smith',
+          email: 'dr.smith@example.com',
+          userType: 'doctor',
+          phoneNumber: '555-123-4567',
+          profileImage: 'default-profile.jpg',
+          specialization: 'Cardiology',
+          qualifications: [
+            {
+              degree: 'MD',
+              institution: 'Harvard Medical School',
+              year: 2010
+            },
+            {
+              degree: 'PhD',
+              institution: 'Johns Hopkins University',
+              year: 2012
+            }
+          ],
+          experience: 12,
+          consultationFee: 150,
+          bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.'
+        };
+        
+        setUser(demoDoctor);
+        localStorage.setItem('telehealth-user', JSON.stringify(demoDoctor));
+        localStorage.setItem('telehealth-token', 'demo-doctor-token');
+        
+        toast({
+          title: 'Demo login successful',
+          description: `Welcome, Dr. Smith! You are now logged in as a demo doctor.`,
+        });
+        return true;
+      } 
+      
+      // Handle demo patient login locally
+      else if (credentials.email === 'john@example.com' && credentials.password === 'password123') {
+        // Create demo patient user object
+        const demoPatient: User = {
+          id: 'demo-patient-id',
+          name: 'John Doe',
+          email: 'john@example.com',
+          userType: 'patient',
+          phoneNumber: '555-987-6543',
+          profileImage: 'default-profile.jpg',
+          dateOfBirth: '1985-05-15',
+          bloodType: 'A+',
+          height: 175,
+          weight: 70,
+          allergies: ['Peanuts', 'Penicillin'],
+          chronicConditions: ['Asthma'],
+          medications: ['Albuterol', 'Vitamin D']
+        };
+        
+        setUser(demoPatient);
+        localStorage.setItem('telehealth-user', JSON.stringify(demoPatient));
+        localStorage.setItem('telehealth-token', 'demo-patient-token');
+        
+        toast({
+          title: 'Demo login successful',
+          description: `Welcome, John! You are now logged in as a demo patient.`,
+        });
+        return true;
+      }
+      
+      // For non-demo users, try regular API login
       const loggedInUser = await loginUser(credentials);
       
       if (loggedInUser) {
