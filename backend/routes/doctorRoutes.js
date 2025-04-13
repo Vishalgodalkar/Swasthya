@@ -4,7 +4,8 @@ const {
   getDoctors,
   getDoctor,
   updateDoctorProfile,
-  updateAvailability
+  updateAvailability,
+  uploadCredentials
 } = require('../controllers/doctorController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -21,5 +22,8 @@ router.route('/profile')
 
 router.route('/availability')
   .put(protect, authorize('doctor'), updateAvailability);
+
+router.route('/credentials')
+  .post(protect, authorize('doctor'), uploadCredentials);
 
 module.exports = router;

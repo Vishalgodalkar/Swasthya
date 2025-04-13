@@ -158,3 +158,37 @@ exports.updateAvailability = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Upload doctor credentials
+// @route   POST /api/doctors/credentials
+// @access  Private
+exports.uploadCredentials = async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findOne({ user: req.user.id });
+
+    if (!doctor) {
+      return next(new ErrorResponse('Doctor profile not found', 404));
+    }
+
+    // In a real implementation, file uploads would be handled here
+    // and stored in a service like AWS S3, then the URLs would be saved
+    
+    // For now, just update the URLs if they're provided
+    if (req.body.licenseDocumentUrl) {
+      doctor.licenseDocumentUrl = req.body.licenseDocumentUrl;
+    }
+    
+    if (req.body.certificateDocumentUrl) {
+      doctor.certificateDocumentUrl = req.body.certificateDocumentUrl;
+    }
+
+    await doctor.save();
+
+    res.status(200).json({
+      success: true,
+      data: doctor
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -84,6 +84,22 @@ export const doctorsAPI = {
   updateAvailability: async (availableSlots: any) => {
     const response = await API.put('/doctors/availability', { availableSlots });
     return response.data;
+  },
+  
+  uploadCredentials: async (data: { licenseDocumentUrl?: string, certificateDocumentUrl?: string }) => {
+    const response = await API.post('/doctors/credentials', data);
+    return response.data;
+  },
+
+  // Function to handle file uploads (in a real implementation, this would upload to a storage service)
+  uploadDocument: async (file: File) => {
+    // This is a mock function - in a real implementation, you would upload to S3 or similar
+    // For now, we'll just simulate an upload with a fake URL
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    return {
+      success: true,
+      fileUrl: `https://example.com/uploads/${file.name}`
+    };
   }
 };
 

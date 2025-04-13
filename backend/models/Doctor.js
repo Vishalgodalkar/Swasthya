@@ -12,9 +12,18 @@ const DoctorSchema = new mongoose.Schema({
     required: [true, 'Please add your specialization']
   },
   qualifications: [{
-    degree: String,
-    institution: String,
-    year: Number
+    degree: {
+      type: String,
+      required: [true, 'Please add your degree']
+    },
+    institution: {
+      type: String,
+      required: [true, 'Please add the institution name']
+    },
+    year: {
+      type: Number,
+      required: [true, 'Please add the graduation year']
+    }
   }],
   experience: {
     type: Number,
@@ -24,6 +33,20 @@ const DoctorSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add your license number'],
     unique: true
+  },
+  licenseAuthority: {
+    type: String,
+    required: [true, 'Please add the issuing medical council']
+  },
+  licenseDocumentUrl: {
+    type: String,
+  },
+  certificateDocumentUrl: {
+    type: String,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   },
   availableSlots: [{
     day: {
