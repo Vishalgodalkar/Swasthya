@@ -1,4 +1,3 @@
-
 // Type Definitions for TeleHealth App
 
 // User Types
@@ -50,6 +49,7 @@ export interface Appointment {
   notes?: string;
   zoomLink?: string;
   zoomPassword?: string;
+  zoomMeetingId?: string;
 }
 
 // Medical Report Types
@@ -90,6 +90,7 @@ export interface HealthMetric {
   unit: string;
   date: string;
   time: string;
+  timestamp: string;
   notes?: string;
 }
 
@@ -147,6 +148,16 @@ export interface DoctorProfile {
   availableSlots?: TimeSlot[];
   rating?: number;
   reviewCount?: number;
+}
+
+// Emergency Contact Type
+export interface EmergencyContact {
+  id: string;
+  userId: string;
+  name: string;
+  relationship: string;
+  phoneNumber: string;
+  email?: string;
 }
 
 // Mock API Functions
@@ -285,4 +296,70 @@ export const getMedicalReports = async (userId: string): Promise<MedicalReport[]
       content: 'Detailed blood test results...'
     }
   ];
+};
+
+// Additional API Function Stubs (since actual implementations are in backend)
+export const getUserProfile = async (userId: string): Promise<User | null> => {
+  console.log('Fetching user profile:', userId);
+  return null;
+};
+
+export const updateUserProfile = async (userId: string, userData: Partial<User>): Promise<User | null> => {
+  console.log('Updating user profile:', userId, userData);
+  return null;
+};
+
+export const updateAppointment = async (appointmentId: string, appointmentData: Partial<Appointment>): Promise<Appointment | null> => {
+  console.log('Updating appointment:', appointmentId, appointmentData);
+  return null;
+};
+
+export const generateZoomMeeting = async (appointmentId: string): Promise<ZoomMeetingDetails | null> => {
+  console.log('Generating Zoom meeting for appointment:', appointmentId);
+  return null;
+};
+
+export const getAllDoctors = async (): Promise<DoctorProfile[]> => {
+  console.log('Fetching all doctors');
+  return [];
+};
+
+export const getDoctorAvailability = async (doctorId: string): Promise<TimeSlot[]> => {
+  console.log('Fetching doctor availability:', doctorId);
+  return [];
+};
+
+export const createAppointment = async (appointmentData: Partial<Appointment>): Promise<Appointment | null> => {
+  console.log('Creating appointment:', appointmentData);
+  return null;
+};
+
+export const getEmergencyContacts = async (userId: string): Promise<EmergencyContact[]> => {
+  console.log('Fetching emergency contacts:', userId);
+  return [];
+};
+
+export const createEmergencyContact = async (contactData: Omit<EmergencyContact, 'id'>): Promise<EmergencyContact | null> => {
+  console.log('Creating emergency contact:', contactData);
+  return null;
+};
+
+export const deleteEmergencyContact = async (contactId: string): Promise<boolean> => {
+  console.log('Deleting emergency contact:', contactId);
+  return true;
+};
+
+export const createMedicalReport = async (reportData: Partial<MedicalReport>): Promise<MedicalReport | null> => {
+  console.log('Creating medical report:', reportData);
+  return null;
+};
+
+export const getMedicalReport = async (reportId: string): Promise<MedicalReport | null> => {
+  console.log('Fetching medical report:', reportId);
+  return null;
+};
+
+export const deleteMedicalReport = async (reportId: string): Promise<boolean> => {
+  console.log('Deleting medical report:', reportId);
+  return true;
 };
