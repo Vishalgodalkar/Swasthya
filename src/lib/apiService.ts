@@ -43,6 +43,11 @@ export const authAPI = {
   logout: async () => {
     const response = await API.get('/auth/logout');
     return response.data;
+  },
+  
+  changePassword: async (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
+    const response = await API.post('/auth/change-password', data);
+    return response.data;
   }
 };
 
@@ -60,6 +65,27 @@ export const usersAPI = {
   
   uploadProfileImage: async (imageUrl: string) => {
     const response = await API.put('/users/profile-image', { imageUrl });
+    return response.data;
+  },
+  
+  updatePrivacySettings: async (settings: {
+    shareHealthData: boolean;
+    profileVisibility: string;
+    emailNotifications: boolean;
+  }) => {
+    const response = await API.put('/users/privacy-settings', settings);
+    return response.data;
+  },
+  
+  exportHealthData: async (format: string = 'json') => {
+    const response = await API.get(`/users/export-health-data?format=${format}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  getHealthSummary: async () => {
+    const response = await API.get('/users/health-summary');
     return response.data;
   }
 };
@@ -161,18 +187,45 @@ export const reportsAPI = {
     return response.data;
   },
   
-  create: async (report: any) => {
-    const response = await API.post('/reports', report);
+  create: async (reportData: FormData) => {
+    const response = await API.post('/reports', reportData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   },
   
-  update: async (id: string, report: any) => {
-    const response = await API.put(`/reports/${id}`, report);
+  update: async (id: string, reportData: FormData) => {
+    const response = await API.put(`/reports/${id}`, reportData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   },
   
   delete: async (id: string) => {
     const response = await API.delete(`/reports/${id}`);
+    return response.data;
+  },
+  
+  download: async (id: string) => {
+    const response = await API.get(`/reports/${id}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+  
+  uploadAttachment: async (reportId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await API.post(`/reports/${reportId}/attachments`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   }
 };
@@ -186,6 +239,60 @@ export const zoomAPI = {
   
   getMeeting: async (meetingId: string) => {
     const response = await API.get(`/zoom/meetings/${meetingId}`);
+    return response.data;
+  }
+};
+
+// Support API
+export const supportAPI = {
+  submitRequest: async (requestData: {
+    supportType: string;
+    subject: string;
+    message: string;
+  }) => {
+    const response = await API.post('/support/requests', requestData);
+    return response.data;
+  },
+  
+  getRequests: async () => {
+    const response = await API.get('/support/requests');
+    return response.data;
+  },
+  
+  getFAQs: async () => {
+    const response = await API.get('/support/faqs');
+    return response.data;
+  }
+};
+
+// Health Data API
+export const healthDataAPI = {
+  export: async (format: string = 'json') => {
+    const response = await API.get(`/health-data/export?format=${format}`, {
+      responseType: 'blob'
+    });
+    
+    // Create a download link and trigger the download
+    const url = window.URL.createObjectURL(new Blob([response]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `health-data-export.${format}`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    return true;
+  },
+  
+  import: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await API.post('/health-data/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return response.data;
   }
 };

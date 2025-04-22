@@ -101,8 +101,8 @@ const App = () => (
                 </RequireAuth>
               } />
 
-              {/* Redirect root to dashboard if logged in */}
-              <Route path="/" element={<Navigate to="/login" />} />
+              {/* Default route */}
+              <Route index element={<Navigate to="/login" />} />
               
               {/* 404 route */}
               <Route path="*" element={<NotFound />} />

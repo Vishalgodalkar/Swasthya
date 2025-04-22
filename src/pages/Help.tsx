@@ -11,8 +11,11 @@ import { Loader2, Mail, Phone, MessageSquare, Headphones } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import NavBar from "@/components/NavBar";
+import { supportAPI } from "@/lib/apiService";
+import { useNavigate } from "react-router-dom";
 
 const Help = () => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [supportType, setSupportType] = useState<string>("question");
   const [subject, setSubject] = useState<string>("");
@@ -20,15 +23,58 @@ const Help = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!subject.trim()) {
+      toast.error("Please provide a subject for your request");
+      return;
+    }
+    
+    if (!message.trim()) {
+      toast.error("Please include a message with your request");
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast.success("Your message has been sent. We'll get back to you soon.");
-    setSubject("");
-    setMessage("");
-    setIsSubmitting(false);
+    try {
+      await supportAPI.submitRequest({
+        supportType,
+        subject,
+        message
+      });
+      
+      toast.success("Your message has been sent. We'll get back to you soon.");
+      setSubject("");
+      setMessage("");
+    } catch (error) {
+      console.error("Error submitting support request:", error);
+      toast.error("Failed to send your message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDownload = (resourceType: string) => {
+    switch (resourceType) {
+      case "guide":
+        toast.success("Downloading Getting Started Guide...");
+        setTimeout(() => {
+          const link = document.createElement('a');
+          link.href = "#";
+          link.download = "TeleHealth-Getting-Started-Guide.pdf";
+          link.click();
+          toast.success("Download complete!");
+        }, 1500);
+        break;
+      case "videos":
+        navigate("/help/videos");
+        break;
+      case "articles":
+        navigate("/help/articles");
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -82,6 +128,7 @@ const Help = () => {
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       disabled={isSubmitting}
+                      required
                     />
                   </div>
 
@@ -94,6 +141,7 @@ const Help = () => {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       disabled={isSubmitting}
+                      required
                     />
                   </div>
                 </CardContent>
@@ -168,6 +216,7 @@ const Help = () => {
                     <AccordionContent>
                       To book an appointment, navigate to the Appointments page and click "Book New Appointment". 
                       You can then select a doctor, choose an available time slot, and confirm your booking.
+                      All appointment details will be visible in your Appointments dashboard.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2">
@@ -175,14 +224,16 @@ const Help = () => {
                     <AccordionContent>
                       For virtual appointments, go to the Appointments page and find your scheduled appointment.
                       Click "Join Meeting" when it's time for your appointment. You will need to allow camera and
-                      microphone access to participate.
+                      microphone access to participate. We recommend testing your equipment 5 minutes before 
+                      your appointment starts.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-3">
                     <AccordionTrigger>How can I access my medical reports?</AccordionTrigger>
                     <AccordionContent>
                       Your medical reports are available in the Reports section. You can view, download, 
-                      or share reports with other healthcare providers as needed.
+                      or share reports with other healthcare providers as needed. Reports can be filtered
+                      by type, date, and doctor.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-4">
@@ -190,6 +241,8 @@ const Help = () => {
                     <AccordionContent>
                       We use industry-standard encryption to protect your health information. Our platform 
                       is HIPAA compliant, and you can control privacy settings in your account page.
+                      All data transfers use secure protocols, and we never share your information without 
+                      your explicit consent.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-5">
@@ -197,6 +250,23 @@ const Help = () => {
                     <AccordionContent>
                       Yes, you can cancel or reschedule appointments up to 24 hours before the scheduled time. 
                       Go to the Appointments page, find the appointment, and use the "Cancel" or "Reschedule" options.
+                      Appointments canceled with less than 24 hours notice may incur a fee, depending on your doctor's policy.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-6">
+                    <AccordionTrigger>How do I update my health information?</AccordionTrigger>
+                    <AccordionContent>
+                      Your health information can be updated in your Profile page. Look for the "Health Information" 
+                      section where you can update details about allergies, medications, medical history, and more.
+                      It's important to keep this information up to date for accurate medical care.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-7">
+                    <AccordionTrigger>How do I export my health data?</AccordionTrigger>
+                    <AccordionContent>
+                      You can export your health data from the Settings page. Look for the "Export Health Data" option
+                      in the Data Management section. You can choose to export in various formats including PDF, CSV, 
+                      and JSON. This feature is useful if you need to share your medical history with other healthcare providers.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -222,7 +292,13 @@ const Help = () => {
                       <p className="text-sm text-muted-foreground">A complete walkthrough of TeleHealth features</p>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">Download PDF</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => handleDownload('guide')}
+                      >
+                        Download PDF
+                      </Button>
                     </CardFooter>
                   </Card>
 
@@ -234,7 +310,13 @@ const Help = () => {
                       <p className="text-sm text-muted-foreground">Step-by-step video guides for common tasks</p>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">View Library</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => handleDownload('videos')}
+                      >
+                        View Library
+                      </Button>
                     </CardFooter>
                   </Card>
 
@@ -246,7 +328,13 @@ const Help = () => {
                       <p className="text-sm text-muted-foreground">Latest medical news and health tips</p>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">Read Articles</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => handleDownload('articles')}
+                      >
+                        Read Articles
+                      </Button>
                     </CardFooter>
                   </Card>
                 </div>
