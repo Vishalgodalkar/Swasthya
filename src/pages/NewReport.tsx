@@ -87,7 +87,7 @@ const NewReport = () => {
       const fileUrl = formData.file ? formData.file.name : undefined;
       
       const report = await createMedicalReport({
-        userId: user.id,
+        patientId: user.id,
         title: formData.title,
         reportType: formData.reportType,
         doctor: formData.doctor,

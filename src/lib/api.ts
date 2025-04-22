@@ -185,6 +185,7 @@ export const getHealthMetrics = async (patientId: string): Promise<HealthMetric[
       unit: 'mmHg',
       date: '2024-03-01',
       time: '09:00',
+      timestamp: '2024-03-01T09:00:00Z',
       notes: 'Morning reading'
     },
     {
@@ -195,6 +196,7 @@ export const getHealthMetrics = async (patientId: string): Promise<HealthMetric[
       unit: 'bpm',
       date: '2024-03-01',
       time: '09:05',
+      timestamp: '2024-03-01T09:05:00Z',
       notes: 'Resting'
     },
     // More mock data as needed

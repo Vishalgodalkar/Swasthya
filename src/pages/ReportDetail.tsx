@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,7 +48,7 @@ const ReportDetail = () => {
         setLoading(true);
         const reportData = await getMedicalReport(id);
         
-        if (!reportData || reportData.userId !== user.id) {
+        if (!reportData || reportData.patientId !== user.id) {
           // Report doesn't exist or doesn't belong to user
           navigate('/reports', { replace: true });
           return;
@@ -103,7 +102,6 @@ const ReportDetail = () => {
     }
   };
 
-  // Function to determine badge color based on report type
   const getBadgeVariant = (type: string) => {
     switch (type.toLowerCase()) {
       case 'laboratory':
@@ -153,7 +151,6 @@ const ReportDetail = () => {
     <div className="min-h-screen bg-muted/20">
       <NavBar />
       <main className="container py-6">
-        {/* Header with back button */}
         <div className="mb-6">
           <Link to="/reports" className="inline-flex items-center text-muted-foreground hover:text-foreground">
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -161,7 +158,6 @@ const ReportDetail = () => {
           </Link>
         </div>
         
-        {/* Report title and actions */}
         <div className="mb-8">
           <div className="flex justify-between items-start">
             <div>
@@ -218,9 +214,7 @@ const ReportDetail = () => {
           </div>
         </div>
         
-        {/* Report details */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Metadata sidebar */}
           <div className="md:col-span-1">
             <Card>
               <CardContent className="space-y-4 pt-6">
@@ -255,7 +249,6 @@ const ReportDetail = () => {
               </CardContent>
             </Card>
             
-            {/* Blockchain verification placeholder */}
             <div className="mt-4">
               <Card className="bg-health-green-50 border-health-green-200">
                 <CardContent className="py-4 text-center">
@@ -286,7 +279,6 @@ const ReportDetail = () => {
             </div>
           </div>
 
-          {/* Report content */}
           <div className="md:col-span-3">
             <Card>
               <CardContent className="pt-6">

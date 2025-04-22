@@ -65,6 +65,7 @@ interface RegisterData {
   name: string;
   email: string;
   password: string;
+  phoneNumber: string;
   dateOfBirth: string;
   bloodType: string;
   height: number;
@@ -78,7 +79,7 @@ interface RegisterData {
   licenseNumber?: string;
   licenseAuthority?: string;
   consultationFee?: number;
-  qualifications?: Array<{degree: string, institution: string, year: number}>;
+  qualifications?: { degree: string; institution: string; year: number }[];
   bio?: string;
 }
 
@@ -164,6 +165,7 @@ const Register = () => {
         name: data.name,
         email: data.email,
         password: data.password,
+        phoneNumber: "",
         dateOfBirth: data.dateOfBirth,
         bloodType: data.bloodType,
         height: data.height,
@@ -202,13 +204,17 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      // In a real implementation, we would handle file uploads here
-      // For now, we're just simulating it
+      const sanitizedQualifications = data.qualifications.map(qual => ({
+        degree: qual.degree || "",
+        institution: qual.institution || "",
+        year: qual.year || new Date().getFullYear()
+      }));
       
       const userData: RegisterData = {
         name: data.name,
         email: data.email,
         password: data.password,
+        phoneNumber: "",
         dateOfBirth: data.dateOfBirth,
         bloodType: data.bloodType,
         height: data.height,
@@ -222,9 +228,8 @@ const Register = () => {
         licenseNumber: data.licenseNumber,
         licenseAuthority: data.licenseAuthority,
         consultationFee: data.consultationFee,
-        qualifications: data.qualifications,
+        qualifications: sanitizedQualifications,
         bio: data.bio
-        // Not sending the files directly to registerUser, as they would need special handling
       };
       
       const success = await registerUser(userData);
