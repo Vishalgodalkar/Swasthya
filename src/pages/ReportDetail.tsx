@@ -48,8 +48,8 @@ const ReportDetail = () => {
         setLoading(true);
         const reportData = await getMedicalReport(id);
         
-        if (!reportData || reportData.patientId !== user.id) {
-          // Report doesn't exist or doesn't belong to user
+        if (!reportData) {
+          // Report doesn't exist
           navigate('/reports', { replace: true });
           return;
         }
@@ -99,6 +99,29 @@ const ReportDetail = () => {
       });
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (report?.fileUrl) {
+      // Create a temporary anchor element and trigger the download
+      const link = document.createElement('a');
+      link.href = report.fileUrl;
+      link.download = `Report-${report.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: 'Download Started',
+        description: 'Your report is being downloaded.',
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Download Failed',
+        description: 'No file is associated with this report.',
+      });
     }
   };
 
@@ -158,61 +181,63 @@ const ReportDetail = () => {
           </Link>
         </div>
         
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1>{report.title}</h1>
-              <div className="flex items-center mt-2 space-x-2">
-                <Badge className={getBadgeVariant(report.reportType)} variant="secondary">
-                  {report.reportType}
-                </Badge>
-                <span className="text-muted-foreground">
-                  Report ID: {report.id.substring(0, 8)}...
-                </span>
+        {report && (
+          <div className="mb-8">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1>{report.title}</h1>
+                <div className="flex items-center mt-2 space-x-2">
+                  <Badge className={getBadgeVariant(report.reportType)} variant="secondary">
+                    {report.reportType}
+                  </Badge>
+                  <span className="text-muted-foreground">
+                    Report ID: {report.id.substring(0, 8)}...
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {report.fileUrl && (
+                  <Button variant="outline" size="sm" onClick={handleDownload}>
+                    <Download className="mr-1 h-4 w-4" />
+                    Download
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={`/reports/${report.id}/edit`}>
+                    <FilePenLine className="mr-1 h-4 w-4" />
+                    Edit
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash className="mr-1 h-4 w-4" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Medical Report</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this medical report? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDelete} 
+                        className="bg-red-600 hover:bg-red-700"
+                        disabled={deleting}
+                      >
+                        {deleting ? 'Deleting...' : 'Delete'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
-            <div className="flex gap-2">
-              {report.fileUrl && (
-                <Button variant="outline" size="sm">
-                  <Download className="mr-1 h-4 w-4" />
-                  Download
-                </Button>
-              )}
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`/reports/${report.id}/edit`}>
-                  <FilePenLine className="mr-1 h-4 w-4" />
-                  Edit
-                </Link>
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash className="mr-1 h-4 w-4" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Medical Report</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this medical report? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDelete} 
-                      className="bg-red-600 hover:bg-red-700"
-                      disabled={deleting}
-                    >
-                      {deleting ? 'Deleting...' : 'Delete'}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
           </div>
-        </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-1">

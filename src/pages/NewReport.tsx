@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Loader2, Download } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -83,26 +83,29 @@ const NewReport = () => {
         return;
       }
       
-      // File handling would be implemented in a real backend
-      const fileUrl = formData.file ? formData.file.name : undefined;
-      
-      const report = await createMedicalReport({
+      const reportData: any = {
         patientId: user.id,
         title: formData.title,
         reportType: formData.reportType,
         doctor: formData.doctor,
         hospital: formData.hospital,
         date: formData.date,
-        content: formData.content,
-        fileUrl
-      });
+        content: formData.content
+      };
+      
+      // Add file if selected
+      if (formData.file) {
+        reportData.fileUrl = URL.createObjectURL(formData.file);
+      }
+      
+      const report = await createMedicalReport(reportData);
       
       toast({
         title: 'Report Created',
         description: 'Your medical report has been successfully added.',
       });
       
-      navigate(`/reports/${report.id}`);
+      navigate(`/reports/${report?.id || ''}`);
     } catch (error) {
       console.error('Error creating report:', error);
       toast({

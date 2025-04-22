@@ -49,12 +49,17 @@ const App = () => (
                   <Reports />
                 </RequireAuth>
               } />
+              <Route path="/reports/new" element={
+                <RequireAuth>
+                  <NewReport />
+                </RequireAuth>
+              } />
               <Route path="/reports/:id" element={
                 <RequireAuth>
                   <ReportDetail />
                 </RequireAuth>
               } />
-              <Route path="/reports/new" element={
+              <Route path="/reports/:id/edit" element={
                 <RequireAuth>
                   <NewReport />
                 </RequireAuth>
@@ -77,6 +82,11 @@ const App = () => (
               <Route path="/appointments" element={
                 <RequireAuth>
                   <Appointments />
+                </RequireAuth>
+              } />
+              <Route path="/book-appointment/:doctorId?" element={
+                <RequireAuth>
+                  <BookAppointment />
                 </RequireAuth>
               } />
               <Route path="/book-appointment" element={

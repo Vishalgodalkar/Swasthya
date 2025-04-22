@@ -79,6 +79,7 @@ export interface MedicalReport {
   doctor: string;
   hospital: string;
   createdAt: string;
+  fileUrl?: string; // Added this property to fix the TypeScript error
 }
 
 // Health Metrics Types
