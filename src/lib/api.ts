@@ -79,7 +79,7 @@ export interface MedicalReport {
   doctor: string;
   hospital: string;
   createdAt: string;
-  fileUrl?: string; // Added this property to fix the TypeScript error
+  fileUrl?: string;
 }
 
 // Health Metrics Types
@@ -282,7 +282,8 @@ export const getMedicalReports = async (userId: string): Promise<MedicalReport[]
       doctor: 'Dr. Sarah Smith',
       hospital: 'General Hospital',
       createdAt: '2024-02-15T10:00:00Z',
-      content: 'Detailed examination results...'
+      content: 'Detailed examination results...',
+      fileUrl: 'https://example.com/reports/annual-exam.pdf'
     },
     {
       id: '2',
@@ -296,7 +297,8 @@ export const getMedicalReports = async (userId: string): Promise<MedicalReport[]
       doctor: 'Dr. John Brown',
       hospital: 'City Medical Center',
       createdAt: '2024-03-01T14:30:00Z',
-      content: 'Detailed blood test results...'
+      content: 'Detailed blood test results...',
+      fileUrl: 'https://example.com/reports/blood-test.pdf'
     }
   ];
 };
@@ -354,15 +356,114 @@ export const deleteEmergencyContact = async (contactId: string): Promise<boolean
 
 export const createMedicalReport = async (reportData: Partial<MedicalReport>): Promise<MedicalReport | null> => {
   console.log('Creating medical report:', reportData);
-  return null;
+  // Simulate successful report creation with mock data
+  const newReport: MedicalReport = {
+    id: `report-${Date.now()}`,
+    patientId: reportData.patientId || 'unknown',
+    doctorId: reportData.doctorId || 'unknown',
+    title: reportData.title || 'New Report',
+    date: reportData.date || new Date().toISOString(),
+    reportType: reportData.reportType || 'General',
+    notes: reportData.notes || '',
+    isPrivate: reportData.isPrivate || false,
+    doctor: reportData.doctor || 'Unknown Doctor',
+    hospital: reportData.hospital || 'Unknown Hospital',
+    createdAt: new Date().toISOString(),
+    content: reportData.content || '',
+    fileUrl: reportData.fileUrl || `https://example.com/reports/report-${Date.now()}.pdf`
+  };
+  
+  return newReport;
 };
 
 export const getMedicalReport = async (reportId: string): Promise<MedicalReport | null> => {
   console.log('Fetching medical report:', reportId);
-  return null;
+  // Simulate fetching a specific report
+  return {
+    id: reportId,
+    patientId: 'patient-1',
+    doctorId: 'doctor-1',
+    title: 'Medical Report',
+    date: new Date().toISOString(),
+    reportType: 'General Examination',
+    notes: 'This is a sample medical report',
+    isPrivate: false,
+    doctor: 'Dr. Sample',
+    hospital: 'Sample Hospital',
+    createdAt: new Date().toISOString(),
+    content: 'Detailed report content goes here...',
+    fileUrl: `https://example.com/reports/${reportId}.pdf`
+  };
 };
 
 export const deleteMedicalReport = async (reportId: string): Promise<boolean> => {
   console.log('Deleting medical report:', reportId);
   return true;
+};
+
+// New functions for handling health data export and privacy settings
+export const exportHealthData = async (userId: string): Promise<Blob> => {
+  console.log('Exporting health data for user:', userId);
+  
+  // Simulate creating a data blob
+  const healthData = {
+    user: { id: userId, exportDate: new Date().toISOString() },
+    metrics: await getHealthMetrics(userId),
+    reports: await getMedicalReports(userId),
+    appointments: await getAppointmentsForPatient(userId)
+  };
+  
+  const dataStr = JSON.stringify(healthData, null, 2);
+  return new Blob([dataStr], { type: 'application/json' });
+};
+
+export const updatePrivacySettings = async (userId: string, settings: any): Promise<boolean> => {
+  console.log('Updating privacy settings for user:', userId, settings);
+  return true;
+};
+
+export const changePassword = async (userId: string, currentPassword: string, newPassword: string): Promise<boolean> => {
+  console.log('Changing password for user:', userId);
+  // In a real app, this would validate the current password and update to the new one
+  return true;
+};
+
+// Function to download a report
+export const downloadReport = async (reportId: string): Promise<void> => {
+  console.log('Downloading report:', reportId);
+  
+  try {
+    const report = await getMedicalReport(reportId);
+    
+    if (!report) {
+      throw new Error('Report not found');
+    }
+    
+    // In a real app, this would fetch the actual file
+    // For this mock, we'll create a sample PDF-like text content
+    const reportContent = `
+      MEDICAL REPORT
+      
+      ID: ${report.id}
+      Title: ${report.title}
+      Date: ${report.date}
+      Doctor: ${report.doctor}
+      Hospital: ${report.hospital}
+      
+      ${report.content || 'No content available'}
+    `;
+    
+    // Create a Blob and trigger download
+    const blob = new Blob([reportContent], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${report.title.replace(/\s+/g, '-')}-${report.id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error('Error downloading report:', error);
+    throw error;
+  }
 };

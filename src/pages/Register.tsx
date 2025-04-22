@@ -70,7 +70,7 @@ interface RegisterData {
   bloodType: string;
   height: number;
   weight: number;
-  userType: string;
+  userType: 'doctor' | 'patient' | 'admin'; // Explicitly typed as union
   allergies: string[];
   chronicConditions: string[];
   medications: string[];
@@ -173,7 +173,7 @@ const Register = () => {
         allergies: data.allergies ? data.allergies.split(',').map(item => item.trim()).filter(Boolean) : [],
         chronicConditions: data.chronicConditions ? data.chronicConditions.split(',').map(item => item.trim()).filter(Boolean) : [],
         medications: data.medications ? data.medications.split(',').map(item => item.trim()).filter(Boolean) : [],
-        userType: 'patient'
+        userType: 'patient' as const
       };
       
       const success = await registerUser(userData);
@@ -222,7 +222,7 @@ const Register = () => {
         allergies: data.allergies ? data.allergies.split(',').map(item => item.trim()).filter(Boolean) : [],
         chronicConditions: data.chronicConditions ? data.chronicConditions.split(',').map(item => item.trim()).filter(Boolean) : [],
         medications: data.medications ? data.medications.split(',').map(item => item.trim()).filter(Boolean) : [],
-        userType: 'doctor',
+        userType: 'doctor' as const,
         specialization: data.specialization,
         experience: data.experience,
         licenseNumber: data.licenseNumber,

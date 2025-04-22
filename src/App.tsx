@@ -21,6 +21,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Appointments from "./pages/Appointments";
 import BookAppointment from "./pages/BookAppointment";
+import Help from "./pages/Help";
 
 // Create QueryClient outside of component
 const queryClient = new QueryClient();
@@ -92,6 +93,11 @@ const App = () => (
               <Route path="/book-appointment" element={
                 <RequireAuth>
                   <BookAppointment />
+                </RequireAuth>
+              } />
+              <Route path="/help" element={
+                <RequireAuth>
+                  <Help />
                 </RequireAuth>
               } />
 
