@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Create an axios instance
@@ -210,7 +209,7 @@ export const reportsAPI = {
     return response.data;
   },
   
-  download: async (id: string) => {
+  download: async (id: string): Promise<Blob> => {
     const response = await API.get(`/reports/${id}/download`, {
       responseType: 'blob'
     });
@@ -273,15 +272,13 @@ export const healthDataAPI = {
     });
     
     // Create a download link and trigger the download
-    const url = window.URL.createObjectURL(new Blob([response]));
+    const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', `health-data-export.${format}`);
     document.body.appendChild(link);
     link.click();
     link.remove();
-    
-    return true;
   },
   
   import: async (file: File) => {

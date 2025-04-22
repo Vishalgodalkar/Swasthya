@@ -46,6 +46,13 @@ const Login = () => {
       } else {
         console.error("Demo patient login failed");
       }
+    } catch (error) {
+      console.error("Error during demo patient login:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Error logging in as demo patient',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -65,6 +72,13 @@ const Login = () => {
       } else {
         console.error("Demo doctor login failed");
       }
+    } catch (error) {
+      console.error("Error during demo doctor login:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Error logging in as demo doctor',
+      });
     } finally {
       setIsSubmitting(false);
     }

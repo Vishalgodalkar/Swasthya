@@ -40,9 +40,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setLoading(true);
+      console.log("Login attempt for:", credentials.email);
       
       // Handle demo logins locally
       if (credentials.email === 'dr.smith@example.com' && credentials.password === 'password123') {
+        console.log("Creating demo doctor user");
         // Create demo doctor user object
         const demoDoctor: User = {
           id: 'demo-doctor-id',
@@ -90,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Handle demo patient login locally
       else if (credentials.email === 'john@example.com' && credentials.password === 'password123') {
+        console.log("Creating demo patient user");
         // Create demo patient user object
         const demoPatient: User = {
           id: 'demo-patient-id',
@@ -125,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // For non-demo users, try regular API login
+      console.log("Attempting regular API login");
       const loggedInUser = await loginUser(credentials);
       
       if (loggedInUser) {
