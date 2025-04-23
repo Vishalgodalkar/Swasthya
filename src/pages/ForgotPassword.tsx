@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { authAPI } from '@/lib/apiService';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -19,17 +20,19 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate password reset email
     try {
-      // Wait for 1.5 seconds to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the API to request password reset
+      const response = await authAPI.forgotPassword(email);
       
-      // Show success message
-      setIsSuccess(true);
-      toast({
-        title: 'Reset Email Sent',
-        description: `Password reset instructions have been sent to ${email}`,
-      });
+      if (response.success) {
+        setIsSuccess(true);
+        toast({
+          title: 'Reset Email Sent',
+          description: `Password reset instructions have been sent to ${email}`,
+        });
+      } else {
+        throw new Error('Password reset request failed');
+      }
     } catch (error) {
       console.error("Password reset error:", error);
       toast({

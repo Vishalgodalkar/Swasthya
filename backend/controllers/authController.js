@@ -1,4 +1,3 @@
-
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
@@ -86,107 +85,89 @@ exports.login = async (req, res, next) => {
 
     // Check for demo doctor login
     if (email === 'dr.smith@example.com' && password === 'password123') {
-      // Check if demo doctor already exists
-      let user = await User.findOne({ email: 'dr.smith@example.com' });
+      console.log("Demo doctor login detected");
       
-      if (!user) {
-        // Create demo doctor user
-        user = await User.create({
-          name: 'Dr. Sarah Smith',
-          email: 'dr.smith@example.com',
-          password: 'password123', // Will be hashed by the model pre-save hook
-          userType: 'doctor',
-          phoneNumber: '555-123-4567',
-          profileImage: 'default-profile.jpg'
-        });
-        
-        // Create demo doctor profile
-        await Doctor.create({
-          user: user._id,
-          specialization: 'Cardiology',
-          qualifications: [
-            {
-              degree: 'MD',
-              institution: 'Harvard Medical School',
-              year: 2010
-            },
-            {
-              degree: 'PhD',
-              institution: 'Johns Hopkins University',
-              year: 2012
-            }
-          ],
-          experience: 12,
-          licenseNumber: 'MD12345678',
-          licenseAuthority: 'American Medical Association',
-          licenseDocumentUrl: 'https://example.com/uploads/license.pdf',
-          certificateDocumentUrl: 'https://example.com/uploads/certificate.pdf',
-          isVerified: true,
-          consultationFee: 150,
-          bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.',
-          availableSlots: [
-            {
-              day: 'Monday',
-              startTime: '09:00',
-              endTime: '17:00'
-            },
-            {
-              day: 'Wednesday',
-              startTime: '09:00',
-              endTime: '17:00'
-            },
-            {
-              day: 'Friday',
-              startTime: '09:00',
-              endTime: '13:00'
-            }
-          ]
-        });
-      }
+      // Create demo doctor user object with all required fields
+      const demoDoctor = {
+        _id: 'demo-doctor-id',
+        name: 'Dr. Sarah Smith',
+        email: 'dr.smith@example.com',
+        userType: 'doctor',
+        phoneNumber: '555-123-4567',
+        profileImage: 'default-profile.jpg',
+        // Add any other fields needed by the User model
+        getSignedJwtToken: function() {
+          return 'demo-doctor-token';
+        },
+        toObject: function() {
+          return {
+            _id: 'demo-doctor-id',
+            id: 'demo-doctor-id',
+            name: 'Dr. Sarah Smith',
+            email: 'dr.smith@example.com',
+            userType: 'doctor',
+            phoneNumber: '555-123-4567',
+            profileImage: 'default-profile.jpg',
+            specialization: 'Cardiology',
+            qualifications: [
+              {
+                degree: 'MD',
+                institution: 'Harvard Medical School',
+                year: 2010
+              },
+              {
+                degree: 'PhD',
+                institution: 'Johns Hopkins University',
+                year: 2012
+              }
+            ],
+            experience: 12,
+            consultationFee: 150,
+            bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.'
+          };
+        }
+      };
 
-      return sendTokenResponse(user, 200, res);
+      return sendTokenResponse(demoDoctor, 200, res);
     }
 
     // Check for demo patient login
     if (email === 'john@example.com' && password === 'password123') {
-      // Check if demo user already exists
-      let user = await User.findOne({ email: 'john@example.com' });
+      console.log("Demo patient login detected");
       
-      if (!user) {
-        // Create demo user
-        user = await User.create({
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: 'password123', // Will be hashed by the model pre-save hook
-          userType: 'patient',
-          phoneNumber: '555-987-6543',
-          profileImage: 'default-profile.jpg'
-        });
-        
-        // Create patient profile with demo data
-        await Patient.create({
-          user: user._id,
-          dateOfBirth: new Date('1985-05-15'),
-          gender: 'Male',
-          bloodType: 'A+',
-          allergies: ['Peanuts', 'Penicillin'],
-          medicalHistory: [
-            {
-              condition: 'Asthma',
-              diagnosedDate: new Date('2005-03-10'),
-              treatment: 'Inhaler as needed',
-              notes: 'Mild condition, triggered by pollen and exercise'
-            }
-          ],
-          emergencyContact: {
-            name: 'Jane Doe',
-            relationship: 'Spouse',
-            phoneNumber: '555-123-7890'
-          }
-        });
-      }
+      // Create demo patient user object with all required fields
+      const demoPatient = {
+        _id: 'demo-patient-id',
+        name: 'John Doe',
+        email: 'john@example.com',
+        userType: 'patient',
+        phoneNumber: '555-987-6543',
+        profileImage: 'default-profile.jpg',
+        // Add any other fields needed by the User model
+        getSignedJwtToken: function() {
+          return 'demo-patient-token';
+        },
+        toObject: function() {
+          return {
+            _id: 'demo-patient-id',
+            id: 'demo-patient-id',
+            name: 'John Doe',
+            email: 'john@example.com',
+            userType: 'patient',
+            phoneNumber: '555-987-6543',
+            profileImage: 'default-profile.jpg',
+            dateOfBirth: '1985-05-15',
+            bloodType: 'A+',
+            height: 175,
+            weight: 70,
+            allergies: ['Peanuts', 'Penicillin'],
+            chronicConditions: ['Asthma'],
+            medications: ['Albuterol', 'Vitamin D']
+          };
+        }
+      };
 
-      return sendTokenResponse(user, 200, res);
+      return sendTokenResponse(demoPatient, 200, res);
     }
 
     // Regular login flow
@@ -280,14 +261,14 @@ exports.forgotPassword = async (req, res, next) => {
       return next(new ErrorResponse('Please provide an email address', 400));
     }
 
-    const user = await User.findOne({ email });
-
-    // Don't reveal if user exists, just return success
+    // For demo purpose, we'll just return a success response
     // In a real application, this would send an email with reset instructions
     
     res.status(200).json({
       success: true,
-      message: 'If an account exists with that email, a password reset link has been sent'
+      data: {
+        message: 'If an account exists with that email, a password reset link has been sent'
+      }
     });
   } catch (err) {
     next(err);
@@ -299,16 +280,17 @@ const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
 
-  // Remove password from output
-  user.password = undefined;
-
   // Convert mongoose document to plain object to add id field
   const userObject = user.toObject ? user.toObject() : { ...user };
   
   // Add id field that matches the frontend User interface
-  userObject.id = userObject._id.toString();
+  if (!userObject.id && userObject._id) {
+    userObject.id = userObject._id.toString();
+  }
+  
   delete userObject._id;
   delete userObject.__v;
+  delete userObject.password;
 
   res.status(statusCode).json({
     success: true,

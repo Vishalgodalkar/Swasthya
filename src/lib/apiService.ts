@@ -25,13 +25,23 @@ API.interceptors.request.use(
 // Authentication API
 export const authAPI = {
   login: async (credentials: { email: string; password: string }) => {
-    const response = await API.post('/auth/login', credentials);
-    return response.data;
+    try {
+      const response = await API.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
   
   register: async (userData: any) => {
-    const response = await API.post('/auth/register', userData);
-    return response.data;
+    try {
+      const response = await API.post('/auth/register', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Register API error:', error);
+      throw error;
+    }
   },
   
   getProfile: async () => {
@@ -41,6 +51,11 @@ export const authAPI = {
   
   logout: async () => {
     const response = await API.get('/auth/logout');
+    return response.data;
+  },
+  
+  forgotPassword: async (email: string) => {
+    const response = await API.post('/auth/forgot-password', { email });
     return response.data;
   },
   
