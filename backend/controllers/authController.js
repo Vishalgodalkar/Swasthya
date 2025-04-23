@@ -1,4 +1,3 @@
-
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const ErrorResponse = require('../utils/errorResponse');
@@ -162,6 +161,7 @@ exports.login = async (req, res, next) => {
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
+    console.error("Login error:", err);
     next(err);
   }
 };
@@ -204,9 +204,16 @@ const sendTokenResponse = (user, statusCode, res) => {
   // Remove password from output
   user.password = undefined;
 
+  // Convert mongoose document to plain object to add id field
+  const userObject = user.toObject ? user.toObject() : user;
+  
+  // Add id field that matches the frontend User interface
+  userObject.id = userObject._id.toString();
+  delete userObject._id;
+
   res.status(statusCode).json({
     success: true,
     token,
-    user
+    user: userObject
   });
 };

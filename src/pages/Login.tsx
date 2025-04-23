@@ -27,6 +27,13 @@ const Login = () => {
       if (success) {
         navigate('/');
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'An error occurred during login. Please try again.',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -45,6 +52,11 @@ const Login = () => {
         navigate('/');
       } else {
         console.error("Demo patient login failed");
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Error logging in as demo patient',
+        });
       }
     } catch (error) {
       console.error("Error during demo patient login:", error);
@@ -71,6 +83,11 @@ const Login = () => {
         navigate('/');
       } else {
         console.error("Demo doctor login failed");
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Error logging in as demo doctor',
+        });
       }
     } catch (error) {
       console.error("Error during demo doctor login:", error);

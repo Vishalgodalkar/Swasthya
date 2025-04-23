@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log("Login attempt for:", credentials.email);
       
-      // Handle demo logins locally
+      // Handle demo doctor login
       if (credentials.email === 'dr.smith@example.com' && credentials.password === 'password123') {
         console.log("Creating demo doctor user");
         // Create demo doctor user object
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return true;
       } 
       
-      // Handle demo patient login locally
+      // Handle demo patient login
       else if (credentials.email === 'john@example.com' && credentials.password === 'password123') {
         console.log("Creating demo patient user");
         // Create demo patient user object
@@ -129,24 +129,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // For non-demo users, try regular API login
       console.log("Attempting regular API login");
-      const loggedInUser = await loginUser(credentials);
+      const response = await loginUser(credentials);
       
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        localStorage.setItem('telehealth-user', JSON.stringify(loggedInUser));
-        toast({
-          title: 'Login successful',
-          description: `Welcome back, ${loggedInUser.name}!`,
-        });
-        return true;
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login failed',
-          description: 'Invalid email or password. Please try again.',
-        });
-        return false;
+      if (response) {
+        const loggedInUser = response.user;
+        if (loggedInUser) {
+          setUser(loggedInUser);
+          localStorage.setItem('telehealth-user', JSON.stringify(loggedInUser));
+          localStorage.setItem('telehealth-token', response.token);
+          toast({
+            title: 'Login successful',
+            description: `Welcome back, ${loggedInUser.name}!`,
+          });
+          return true;
+        }
       }
+      
+      toast({
+        variant: 'destructive',
+        title: 'Login failed',
+        description: 'Invalid email or password. Please try again.',
+      });
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       toast({

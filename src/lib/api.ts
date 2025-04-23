@@ -26,6 +26,13 @@ export interface User {
   medications: string[];
 }
 
+// API Response Types
+export interface LoginResponse {
+  success: boolean;
+  token: string;
+  user: User;
+}
+
 // Appointment Types
 export interface TimeSlot {
   id: string;
@@ -162,10 +169,27 @@ export interface EmergencyContact {
 }
 
 // Mock API Functions
-export const loginUser = async (credentials: LoginCredentials): Promise<User | null> => {
+export const loginUser = async (credentials: LoginCredentials): Promise<LoginResponse | null> => {
   console.log('Attempting to log in with:', credentials);
-  // In a real app, this would call the backend API
-  return null;
+  try {
+    // In a real app, this would call the backend API
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Login error:', error);
+    return null;
+  }
 };
 
 export const registerUser = async (userData: RegisterData): Promise<User | null> => {
