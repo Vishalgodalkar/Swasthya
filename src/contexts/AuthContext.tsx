@@ -26,12 +26,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check for stored user session on component mount
     const storedUser = localStorage.getItem('telehealth-user');
-    if (storedUser) {
+    const token = localStorage.getItem('telehealth-token');
+    
+    if (storedUser && token) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         localStorage.removeItem('telehealth-user');
+        localStorage.removeItem('telehealth-token');
       }
     }
     setLoading(false);
@@ -79,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           medications: []
         };
         
+        // Set user in state and localStorage
         setUser(demoDoctor);
         localStorage.setItem('telehealth-user', JSON.stringify(demoDoctor));
         localStorage.setItem('telehealth-token', 'demo-doctor-token');
@@ -87,6 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Demo login successful',
           description: `Welcome, Dr. Smith! You are now logged in as a demo doctor.`,
         });
+        
+        setTimeout(() => {
+          window.location.href = '/'; // Use window.location for a full reload
+        }, 500);
+        
         return true;
       } 
       
@@ -116,6 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           bio: null
         };
         
+        // Set user in state and localStorage
         setUser(demoPatient);
         localStorage.setItem('telehealth-user', JSON.stringify(demoPatient));
         localStorage.setItem('telehealth-token', 'demo-patient-token');
@@ -124,6 +134,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: 'Demo login successful',
           description: `Welcome, John! You are now logged in as a demo patient.`,
         });
+        
+        setTimeout(() => {
+          window.location.href = '/'; // Use window.location for a full reload
+        }, 500);
+        
         return true;
       }
       
@@ -131,18 +146,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("Attempting regular API login");
       const response = await loginUser(credentials);
       
-      if (response) {
+      if (response && response.token && response.user) {
         const loggedInUser = response.user;
-        if (loggedInUser) {
-          setUser(loggedInUser);
-          localStorage.setItem('telehealth-user', JSON.stringify(loggedInUser));
-          localStorage.setItem('telehealth-token', response.token);
-          toast({
-            title: 'Login successful',
-            description: `Welcome back, ${loggedInUser.name}!`,
-          });
-          return true;
-        }
+        setUser(loggedInUser);
+        localStorage.setItem('telehealth-user', JSON.stringify(loggedInUser));
+        localStorage.setItem('telehealth-token', response.token);
+        
+        toast({
+          title: 'Login successful',
+          description: `Welcome back, ${loggedInUser.name}!`,
+        });
+        return true;
       }
       
       toast({

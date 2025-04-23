@@ -12,6 +12,7 @@ import RequireAuth from "./components/RequireAuth";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import Reports from "./pages/Reports";
 import ReportDetail from "./pages/ReportDetail";
 import NewReport from "./pages/NewReport";
@@ -38,6 +39,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
               {/* Protected routes */}
               <Route path="/" element={

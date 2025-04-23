@@ -1,5 +1,7 @@
+
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
+const Patient = require('../models/Patient');
 const ErrorResponse = require('../utils/errorResponse');
 
 // @desc    Register user
@@ -8,6 +10,12 @@ const ErrorResponse = require('../utils/errorResponse');
 exports.register = async (req, res, next) => {
   try {
     const { name, email, password, userType, phoneNumber } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return next(new ErrorResponse('Email already registered', 400));
+    }
 
     // Create user
     const user = await User.create({
@@ -37,9 +45,29 @@ exports.register = async (req, res, next) => {
         licenseNumber,
         licenseAuthority,
         consultationFee,
-        qualifications,
+        qualifications: qualifications || [],
         bio: bio || '',
         isVerified: false // New doctors need verification
+      });
+    }
+    
+    // If registering as a patient, create patient profile
+    if (userType === 'patient') {
+      const {
+        dateOfBirth,
+        gender,
+        bloodType,
+        allergies,
+        medicalHistory
+      } = req.body;
+      
+      await Patient.create({
+        user: user._id,
+        dateOfBirth,
+        gender,
+        bloodType,
+        allergies: allergies || [],
+        medicalHistory: medicalHistory || []
       });
     }
 
@@ -134,6 +162,28 @@ exports.login = async (req, res, next) => {
           phoneNumber: '555-987-6543',
           profileImage: 'default-profile.jpg'
         });
+        
+        // Create patient profile with demo data
+        await Patient.create({
+          user: user._id,
+          dateOfBirth: new Date('1985-05-15'),
+          gender: 'Male',
+          bloodType: 'A+',
+          allergies: ['Peanuts', 'Penicillin'],
+          medicalHistory: [
+            {
+              condition: 'Asthma',
+              diagnosedDate: new Date('2005-03-10'),
+              treatment: 'Inhaler as needed',
+              notes: 'Mild condition, triggered by pollen and exercise'
+            }
+          ],
+          emergencyContact: {
+            name: 'Jane Doe',
+            relationship: 'Spouse',
+            phoneNumber: '555-123-7890'
+          }
+        });
       }
 
       return sendTokenResponse(user, 200, res);
@@ -173,9 +223,32 @@ exports.getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
 
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
+
+    // Get additional profile information based on user type
+    let profileData = {};
+    
+    if (user.userType === 'doctor') {
+      const doctorProfile = await Doctor.findOne({ user: user._id });
+      if (doctorProfile) {
+        profileData = doctorProfile.toObject();
+      }
+    } else if (user.userType === 'patient') {
+      const patientProfile = await Patient.findOne({ user: user._id });
+      if (patientProfile) {
+        profileData = patientProfile.toObject();
+      }
+    }
+
     res.status(200).json({
       success: true,
-      data: user
+      data: {
+        ...user.toObject(),
+        ...profileData,
+        id: user._id // Ensure ID is provided for frontend
+      }
     });
   } catch (err) {
     next(err);
@@ -196,6 +269,31 @@ exports.logout = async (req, res, next) => {
   }
 };
 
+// @desc    Request password reset
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return next(new ErrorResponse('Please provide an email address', 400));
+    }
+
+    const user = await User.findOne({ email });
+
+    // Don't reveal if user exists, just return success
+    // In a real application, this would send an email with reset instructions
+    
+    res.status(200).json({
+      success: true,
+      message: 'If an account exists with that email, a password reset link has been sent'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
@@ -205,11 +303,12 @@ const sendTokenResponse = (user, statusCode, res) => {
   user.password = undefined;
 
   // Convert mongoose document to plain object to add id field
-  const userObject = user.toObject ? user.toObject() : user;
+  const userObject = user.toObject ? user.toObject() : { ...user };
   
   // Add id field that matches the frontend User interface
   userObject.id = userObject._id.toString();
   delete userObject._id;
+  delete userObject.__v;
 
   res.status(statusCode).json({
     success: true,

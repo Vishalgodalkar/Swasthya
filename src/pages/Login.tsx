@@ -26,6 +26,12 @@ const Login = () => {
       const success = await login({ email, password });
       if (success) {
         navigate('/');
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Invalid email or password. Please try again.',
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -43,7 +49,11 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       console.log("Demo patient login attempt");
-      const success = await login({ email: 'john@example.com', password: 'password123' });
+      const success = await login({ 
+        email: 'john@example.com', 
+        password: 'password123' 
+      });
+      
       if (success) {
         toast({
           title: 'Demo Patient Login',
@@ -74,7 +84,11 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       console.log("Demo doctor login attempt");
-      const success = await login({ email: 'dr.smith@example.com', password: 'password123' });
+      const success = await login({ 
+        email: 'dr.smith@example.com', 
+        password: 'password123' 
+      });
+      
       if (success) {
         toast({
           title: 'Demo Doctor Login',
@@ -147,7 +161,7 @@ const Login = () => {
               </div>
               <Button
                 type="submit"
-                className="w-full health-gradient"
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -168,6 +182,7 @@ const Login = () => {
                 onClick={handleDemoPatientLogin}
                 disabled={isSubmitting}
                 className="w-full"
+                type="button"
               >
                 Demo Patient
               </Button>
@@ -176,13 +191,14 @@ const Login = () => {
                 onClick={handleDemoDoctorLogin}
                 disabled={isSubmitting}
                 className="w-full"
+                type="button"
               >
                 Demo Doctor
               </Button>
             </div>
             <div className="text-center text-sm">
               Don't have an account?{' '}
-              <Link to="/register" className="text-health-blue-600 hover:underline">
+              <Link to="/register" className="text-blue-600 hover:underline">
                 Create one
               </Link>
             </div>
