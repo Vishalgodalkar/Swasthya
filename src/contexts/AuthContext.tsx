@@ -19,6 +19,48 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Define demo users for offline use
+const demoDoctorUser: User = {
+  id: 'demo-doctor-id',
+  name: 'Dr. Sarah Smith',
+  email: 'dr.smith@example.com',
+  userType: 'doctor',
+  phoneNumber: '555-123-4567',
+  profileImage: 'default-profile.jpg',
+  specialization: 'Cardiology',
+  qualifications: [
+    {
+      degree: 'MD',
+      institution: 'Harvard Medical School',
+      year: 2010
+    },
+    {
+      degree: 'PhD',
+      institution: 'Johns Hopkins University',
+      year: 2012
+    }
+  ],
+  experience: 12,
+  consultationFee: 150,
+  bio: 'Board-certified cardiologist with over 12 years of experience in treating heart conditions and performing cardiac procedures.'
+};
+
+const demoPatientUser: User = {
+  id: 'demo-patient-id',
+  name: 'John Doe',
+  email: 'john@example.com',
+  userType: 'patient',
+  phoneNumber: '555-987-6543',
+  profileImage: 'default-profile.jpg',
+  dateOfBirth: '1985-05-15',
+  bloodType: 'A+',
+  height: 175,
+  weight: 70,
+  allergies: ['Peanuts', 'Penicillin'],
+  chronicConditions: ['Asthma'],
+  medications: ['Albuterol', 'Vitamin D']
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -45,21 +87,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       console.log("Login attempt for:", credentials.email);
-
-      // Use API service for login
-      const response = await authAPI.login(credentials);
       
-      if (response && response.success && response.token && response.user) {
-        setUser(response.user);
-        localStorage.setItem('telehealth-user', JSON.stringify(response.user));
-        localStorage.setItem('telehealth-token', response.token);
+      // Check for demo doctor login
+      if (credentials.email === 'dr.smith@example.com' && credentials.password === 'password123') {
+        console.log("Demo doctor login detected");
+        setUser(demoDoctorUser);
+        localStorage.setItem('telehealth-user', JSON.stringify(demoDoctorUser));
+        localStorage.setItem('telehealth-token', 'demo-doctor-token');
         
         toast({
           title: 'Login successful',
-          description: `Welcome, ${response.user.name}!`,
+          description: `Welcome, ${demoDoctorUser.name}!`,
         });
         
         return true;
+      }
+      
+      // Check for demo patient login
+      if (credentials.email === 'john@example.com' && credentials.password === 'password123') {
+        console.log("Demo patient login detected");
+        setUser(demoPatientUser);
+        localStorage.setItem('telehealth-user', JSON.stringify(demoPatientUser));
+        localStorage.setItem('telehealth-token', 'demo-patient-token');
+        
+        toast({
+          title: 'Login successful',
+          description: `Welcome, ${demoPatientUser.name}!`,
+        });
+        
+        return true;
+      }
+
+      // Regular login flow - try API service first
+      try {
+        const response = await authAPI.login(credentials);
+        
+        if (response && response.success && response.token && response.user) {
+          setUser(response.user);
+          localStorage.setItem('telehealth-user', JSON.stringify(response.user));
+          localStorage.setItem('telehealth-token', response.token);
+          
+          toast({
+            title: 'Login successful',
+            description: `Welcome, ${response.user.name}!`,
+          });
+          
+          return true;
+        }
+      } catch (apiError) {
+        console.error("API login failed, but continuing with fallback options:", apiError);
+        // Continue to error handling below for non-demo accounts
       }
       
       toast({
